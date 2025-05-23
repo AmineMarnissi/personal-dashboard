@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Manager</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Personal Manager</h1>
+            <div class="current-date" id="current-date">Loading...</div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <a href="#" class="nav-link active" data-tab="dashboard">Dashboard</a>
+            <a href="#" class="nav-link" data-tab="expenses">Expenses</a>
+            <a href="#" class="nav-link" data-tab="ideas">Ideas</a>
+            <a href="#" class="nav-link" data-tab="projects">Projects</a>
+            <a href="#" class="nav-link" data-tab="training">Training</a>
+            <a href="#" class="nav-link" data-tab="contacts">Contacts</a>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3 class="card-title">Expenses Overview</h3>
+                    <div class="chart-container">
+                        <canvas id="expenses-chart"></canvas>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <h3 class="card-title">Projects Status</h3>
+                    <canvas id="projects-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3 class="card-title">Recent Activity</h3>
+                <div class="activity-log">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-log">
+                            <!-- Activity log entries will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Tab -->
+        <div id="expenses" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">Expenses</h2>
+                <button id="add-expense-btn" class="action-btn">Add Expense</button>
+            </div>
+            
+            <div class="dashboard-card small-chart training-chart-container">
+                <h3 class="card-title">Monthly Expenses</h3>
+                <div class="chart-container">
+                    <canvas id="monthly-expenses-chart"></canvas>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expense-table">
+                        <!-- Expense entries will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Ideas Tab -->
+        <div id="ideas" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">Ideas</h2>
+                <button id="add-idea-btn" class="action-btn">Add Idea</button>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="idea-search" class="search-input" placeholder="Search ideas...">
+            </div>
+            
+            <div id="ideas-container" class="ideas-container">
+                <!-- Idea cards will be populated here -->
+            </div>
+        </div>
+
+        <!-- Projects Tab -->
+        <div id="projects" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">Projects</h2>
+                <button id="add-project-btn" class="action-btn">Add Project</button>
+            </div>
+            
+            <div class="kanban-board">
+                <div class="kanban-column">
+                    <div class="kanban-header todo">To Do</div>
+                    <div id="todo-column">
+                        <!-- Todo tasks will be populated here -->
+                    </div>
+                </div>
+                <div class="kanban-column">
+                    <div class="kanban-header progress">In Progress</div>
+                    <div id="progress-column">
+                        <!-- In progress tasks will be populated here -->
+                    </div>
+                </div>
+                <div class="kanban-column">
+                    <div class="kanban-header done">Done</div>
+                    <div id="done-column">
+                        <!-- Done tasks will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Tab -->
+        <div id="training" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">Training</h2>
+                <button id="add-training-btn" class="action-btn">Add Training</button>
+            </div>
+            
+            <div class="dashboard-card training-chart-container">
+                <h3 class="card-title">Weekly Training Progress</h3>
+                <div class="chart-container">
+                    <canvas id="training-chart"></canvas>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Activity</th>
+                            <th>Duration</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="training-table">
+                        <!-- Training entries will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contacts Tab -->
+        <div id="contacts" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">Contacts</h2>
+                <button id="add-contact-btn" class="action-btn">Add Contact</button>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="contact-search" class="search-input" placeholder="Search contacts...">
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="contacts-table">
+                    <!-- Contact entries will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div id="expense-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="expense-modal-title" class="modal-title">Add Expense</h2>
+                <span id="close-expense-modal" class="close">&times;</span>
+            </div>
+            <form id="expense-form">
+                <input type="hidden" id="expense-id">
+                <div class="form-group">
+                    <label for="expense-date" class="form-label">Date</label>
+                    <input type="date" id="expense-date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="expense-category" class="form-label">Category</label>
+                    <select id="expense-category" class="form-select" required>
+                        <option value="">Select Category</option>
+                        <option value="Food">Food</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Utilities">Utilities</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Health">Health</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="expense-description" class="form-label">Description</label>
+                    <input type="text" id="expense-description" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="expense-amount" class="form-label">Amount</label>
+                    <input type="number" id="expense-amount" class="form-input" step="0.01" min="0" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-expense" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="action-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Idea Modal -->
+    <div id="idea-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="idea-modal-title" class="modal-title">Add Idea</h2>
+                <span id="close-idea-modal" class="close">&times;</span>
+            </div>
+            <form id="idea-form">
+                <input type="hidden" id="idea-id">
+                <div class="form-group">
+                    <label for="idea-title" class="form-label">Title</label>
+                    <input type="text" id="idea-title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="idea-description" class="form-label">Description</label>
+                    <textarea id="idea-description" class="form-textarea" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="idea-tags" class="form-label">Tags (comma-separated)</label>
+                    <input type="text" id="idea-tags" class="form-input" placeholder="e.g., business, tech, creative">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-idea" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="action-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="project-modal-title" class="modal-title">Add Project</h2>
+                <span id="close-project-modal" class="close">&times;</span>
+            </div>
+            <form id="project-form">
+                <input type="hidden" id="project-id">
+                <div class="form-group">
+                    <label for="project-title" class="form-label">Title</label>
+                    <input type="text" id="project-title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="project-description" class="form-label">Description</label>
+                    <textarea id="project-description" class="form-textarea" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="project-due-date" class="form-label">Due Date</label>
+                    <input type="date" id="project-due-date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="project-status" class="form-label">Status</label>
+                    <select id="project-status" class="form-select" required>
+                        <option value="todo">To Do</option>
+                        <option value="progress">In Progress</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="project-priority" class="form-label">Priority</label>
+                    <select id="project-priority" class="form-select" required>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-project" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="action-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Training Modal -->
+    <div id="training-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="training-modal-title" class="modal-title">Add Training</h2>
+                <span id="close-training-modal" class="close">&times;</span>
+            </div>
+            <form id="training-form">
+                <input type="hidden" id="training-id">
+                <div class="form-group">
+                    <label for="training-date" class="form-label">Date</label>
+                    <input type="date" id="training-date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="training-activity" class="form-label">Activity</label>
+                    <input type="text" id="training-activity" class="form-input" placeholder="e.g., Running, Gym, Yoga" required>
+                </div>
+                <div class="form-group">
+                    <label for="training-duration" class="form-label">Duration (minutes)</label>
+                    <input type="number" id="training-duration" class="form-input" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="training-notes" class="form-label">Notes</label>
+                    <textarea id="training-notes" class="form-textarea" placeholder="Optional notes about your training session"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-training" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="action-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="contact-modal-title" class="modal-title">Add Contact</h2>
+                <span id="close-contact-modal" class="close">&times;</span>
+            </div>
+            <form id="contact-form">
+                <input type="hidden" id="contact-id">
+                <div class="form-group">
+                    <label for="contact-name" class="form-label">Name</label>
+                    <input type="text" id="contact-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email" class="form-label">Email</label>
+                    <input type="email" id="contact-email" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="contact-phone" class="form-label">Phone</label>
+                    <input type="tel" id="contact-phone" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="contact-category" class="form-label">Category</label>
+                    <select id="contact-category" class="form-select">
+                        <option value="">Select Category</option>
+                        <option value="Family">Family</option>
+                        <option value="Friends">Friends</option>
+                        <option value="Work">Work</option>
+                        <option value="Business">Business</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="contact-notes" class="form-label">Notes</label>
+                    <textarea id="contact-notes" class="form-textarea" placeholder="Additional notes about this contact"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-contact" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="action-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include the renderer script -->
+    <script src="renderer.js"></script>
+</body>
+</html>

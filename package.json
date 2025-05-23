@@ -1,0 +1,65 @@
+{
+  "name": "personal-dashboard",
+  "version": "1.0.0",
+  "description": "A personal dashboard Electron application with SQLite database",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "init-db": "node init-db.js",
+    "backup-db": "node -e \"const DbInit = require('./init-db'); const path = require('path'); const db = new DbInit(path.join(require('electron').app.getPath('userData'), 'dashboard.db')); db.initialize().then(() => db.backupDatabase('./backup.db')).then(() => console.log('Backup complete')).catch(console.error);\"",
+    "reset-db": "node -e \"const fs = require('fs'); const path = require('path'); const dbPath = path.join(require('electron').app.getPath('userData'), 'dashboard.db'); if(fs.existsSync(dbPath)) fs.unlinkSync(dbPath); console.log('Database reset. Run npm run init-db to recreate.');\"",
+    "build": "electron-builder",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "dashboard",
+    "personal",
+    "productivity",
+    "electron",
+    "sqlite"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.6"
+  },
+  "build": {
+    "appId": "com.yourcompany.personal-dashboard",
+    "productName": "Personal Dashboard",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
+  }
+}
