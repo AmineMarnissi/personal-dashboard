@@ -1243,12 +1243,216 @@ function setupEventListeners() {
         });
     });
 }
+// Global variables
+let currentDate = new Date();
+let todos = [];
+// Update current date display
+function updateCurrentDate() {
+    const now = new Date();
+    const options = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    };
+    document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+    }
+// Calendar functionality
+function setupCalendar() {
+    renderCalendar();
+    
+    document.getElementById('prev-month').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+    
+    document.getElementById('next-month').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+    
+    // Set date picker to today
+    const today = new Date();
+    document.getElementById('date-picker').value = today.toISOString().split('T')[0];
+}
 
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const today = new Date();
+    
+    // Update month display
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    document.getElementById('calendar-month').textContent = `${monthNames[month]} ${year}`;
+    
+    // Clear calendar grid
+    const calendarGrid = document.getElementById('calendar-grid');
+    calendarGrid.innerHTML = '';
+    
+    // Add day headers
+    const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    dayHeaders.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-day-header';
+        dayHeader.textContent = day;
+        calendarGrid.appendChild(dayHeader);
+    });
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    
+    // Add previous month's trailing days
+    for (let i = firstDay - 1; i >= 0; i--) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day other-month';
+        dayElement.textContent = daysInPrevMonth - i;
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // Add current month's days
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day;
+        
+        // Highlight today
+        if (year === today.getFullYear() && 
+            month === today.getMonth() && 
+            day === today.getDate()) {
+            dayElement.classList.add('today');
+        }
+        
+        dayElement.addEventListener('click', function() {
+            // Handle day click
+            const selectedDate = new Date(year, month, day);
+            document.getElementById('date-picker').value = selectedDate.toISOString().split('T')[0];
+        });
+        
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // Add next month's leading days
+    const totalCells = calendarGrid.children.length;
+    const remainingCells = 42 - totalCells; // 6 weeks * 7 days
+    for (let day = 1; day <= remainingCells; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day other-month';
+        dayElement.textContent = day;
+        calendarGrid.appendChild(dayElement);
+    }
+}
+// To-Do List functionality
+function setupTodoList() {
+    const todoInput = document.getElementById('todo-input');
+    const todoAddBtn = document.getElementById('todo-add-btn');
+    
+    todoAddBtn.addEventListener('click', addTodo);
+    todoInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            addTodo();
+        }
+    });
+    
+    renderTodos();
+}
+
+function addTodo() {
+    const todoInput = document.getElementById('todo-input');
+    const text = todoInput.value.trim();
+    
+    if (text) {
+        const todo = {
+            id: Date.now(),
+            text: text,
+            completed: false,
+            createdAt: new Date()
+        };
+        
+        todos.unshift(todo);
+        todoInput.value = '';
+        renderTodos();
+    }
+}
+
+function toggleTodo(id) {
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+        todo.completed = !todo.completed;
+        renderTodos();
+    }
+}
+
+function deleteTodo(id) {
+    todos = todos.filter(t => t.id !== id);
+    renderTodos();
+}
+
+function renderTodos() {
+    const todoList = document.getElementById('todo-list');
+    todoList.innerHTML = '';
+    
+    todos.forEach(todo => {
+        const todoItem = document.createElement('li');
+        todoItem.className = 'todo-item';
+        
+        todoItem.innerHTML = `
+            <div class="todo-item-content">
+                <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                        onchange="toggleTodo(${todo.id})">
+                <span class="todo-text ${todo.completed ? 'completed' : ''}">${todo.text}</span>
+            </div>
+            <button class="todo-delete-btn" onclick="deleteTodo(${todo.id})">✕</button>
+        `;
+        
+        todoList.appendChild(todoItem);
+    });
+}
+// Sample data and charts
+function populateSampleData() {
+    // Add sample todos
+    todos = [
+        { id: 1, text: 'Review project proposals', completed: false, createdAt: new Date() },
+        { id: 2, text: 'Schedule team meeting', completed: true, createdAt: new Date() },
+        { id: 3, text: 'Update website content', completed: false, createdAt: new Date() },
+        { id: 4, text: 'Prepare monthly report', completed: false, createdAt: new Date() },
+        { id: 5, text: 'Call client about feedback', completed: false, createdAt: new Date() }
+    ];
+    renderTodos();
+    
+    // Add sample activity log
+    const activityLog = document.getElementById('activity-log');
+    const sampleActivities = [
+        { date: new Date(), category: 'Task', description: 'Completed project review' },
+        { date: new Date(Date.now() - 86400000), category: 'Meeting', description: 'Team standup completed' },
+        { date: new Date(Date.now() - 172800000), category: 'Expense', description: 'Added office supplies expense' },
+        { date: new Date(Date.now() - 259200000), category: 'Project', description: 'Started new website redesign' },
+        { date: new Date(Date.now() - 345600000), category: 'Training', description: 'Completed 45-minute workout' }
+    ];
+    
+    sampleActivities.forEach(activity => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${activity.date.toLocaleDateString()}</td>
+            <td>${activity.category}</td>
+            <td>${activity.description}</td>
+        `;
+        activityLog.appendChild(row);
+    });
+}
 // Initialize application
 function init() {
     setupEventListeners();
     setupSearchListeners();
     renderDashboard();
+    updateCurrentDate();
+    setupCalendar();
+    setupTodoList();
+    populateSampleData();
 }
 
 // Run initialization when DOM is loaded

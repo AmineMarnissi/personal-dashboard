@@ -9,6 +9,29 @@
 </head>
 <body>
     <div class="container">
+        <div class="topbar">
+            <div class="topbar-item">
+                <img src="https://img.icons8.com/material-rounded/24/000000/new-post.png" alt="Message Icon" />
+                <span>Message</span>
+            </div>
+            <div class="topbar-item">
+                <img src="https://img.icons8.com/ios-filled/24/000000/appointment-reminders--v1.png" alt="Notification Icon" />
+                <span>Notification</span>
+            </div>
+            <div class="topbar-item profile" id="profile-dropdown-toggle">
+                <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User Avatar" class="avatar" />
+                <span>John Doe</span>
+                <span class="arrow">▾</span>
+            
+                <!-- Dropdown menu -->
+                <div class="dropdown-menu" id="profile-dropdown">
+                    <a href="#" id="profile-link">My Profile</a>
+                    <a href="#" id="settings-link">Settings</a>
+                    <a href="#">Log Out</a>
+                </div>
+            </div>
+            
+        </div>        
         <!-- Header -->
         <div class="header">
             <h1>Personal Manager</h1>
@@ -23,10 +46,51 @@
             <a href="#" class="nav-link" data-tab="projects">Projects</a>
             <a href="#" class="nav-link" data-tab="training">Training</a>
             <a href="#" class="nav-link" data-tab="contacts">Contacts</a>
+            <a href="#" class="nav-link" data-tab="profile">Profile</a>
+            <a href="#" class="nav-link" data-tab="settings">Settings</a>
         </div>
 
         <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
+            <!-- Calendar and To-Do Widgets -->
+            <div class="widgets-container">
+                <!-- Calendar Widget -->
+                <div class="calendar-widget">
+                    <div class="calendar-header">
+                        <h2 class="calendar-title">Calendar</h2>
+                        <a href="#" class="show-all-link">Show All</a>
+                    </div>
+                    
+                    <div class="calendar-nav">
+                        <button id="prev-month">‹</button>
+                        <div class="calendar-month" id="calendar-month">May 2025</div>
+                        <button id="next-month">›</button>
+                    </div>
+                    
+                    <div class="calendar-grid" id="calendar-grid">
+                        <!-- Calendar will be populated here -->
+                    </div>
+                    
+                    <input type="date" class="date-input" id="date-picker" />
+                </div>
+
+                <!-- To-Do Widget -->
+                <div class="todo-widget">
+                    <div class="todo-header">
+                        <h2 class="todo-title">To Do List</h2>
+                        <a href="#" class="show-all-link">Show All</a>
+                    </div>
+                    
+                    <div class="todo-input-container">
+                        <input type="text" placeholder="Enter task" id="todo-input" class="todo-input">
+                        <button id="todo-add-btn" class="todo-add-btn">Add</button>
+                    </div>
+                    
+                    <ul id="todo-list" class="todo-list">
+                        <!-- To-do items will be populated here -->
+                    </ul>
+                </div>
+            </div>
             <div class="dashboard-grid">
                 <div class="dashboard-card">
                     <h3 class="card-title">Expenses Overview</h3>
@@ -55,6 +119,263 @@
                             <!-- Activity log entries will be populated here -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">Settings</h2>
+            </div>
+            
+            <div class="settings-container">
+                <!-- General Settings -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">General</h3>
+                    <div class="settings-card">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Theme</label>
+                                <span class="setting-description">Choose your preferred theme</span>
+                            </div>
+                            <select id="theme-select" class="setting-select">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Language</label>
+                                <span class="setting-description">Select your language</span>
+                            </div>
+                            <select id="language-select" class="setting-select">
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="it">Italian</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Currency</label>
+                                <span class="setting-description">Default currency for expenses</span>
+                            </div>
+                            <select id="currency-select" class="setting-select">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="JPY">JPY (¥)</option>
+                                <option value="CAD">CAD (C$)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Date Format</label>
+                                <span class="setting-description">How dates are displayed</span>
+                            </div>
+                            <select id="date-format-select" class="setting-select">
+                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                <option value="MMM DD, YYYY">MMM DD, YYYY</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Settings -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Notifications</h3>
+                    <div class="settings-card">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Desktop Notifications</label>
+                                <span class="setting-description">Show desktop notifications for reminders</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="desktop-notifications" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Email Notifications</label>
+                                <span class="setting-description">Receive email notifications for important updates</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="email-notifications">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Task Reminders</label>
+                                <span class="setting-description">Get reminders for upcoming tasks</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="task-reminders" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Expense Alerts</label>
+                                <span class="setting-description">Alert when spending exceeds budget</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="expense-alerts" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy & Security Settings -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Privacy & Security</h3>
+                    <div class="settings-card">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Auto-lock</label>
+                                <span class="setting-description">Automatically lock app after inactivity</span>
+                            </div>
+                            <select id="auto-lock-select" class="setting-select">
+                                <option value="never">Never</option>
+                                <option value="5">5 minutes</option>
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="60">1 hour</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Data Backup</label>
+                                <span class="setting-description">Automatically backup your data</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="auto-backup" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Analytics</label>
+                                <span class="setting-description">Help improve the app by sharing usage data</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="analytics-sharing">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Two-Factor Authentication</label>
+                                <span class="setting-description">Add an extra layer of security</span>
+                            </div>
+                            <button id="setup-2fa-btn" class="setting-button">Setup 2FA</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Settings -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Display</h3>
+                    <div class="settings-card">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Compact View</label>
+                                <span class="setting-description">Show more items in less space</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="compact-view">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Show Sidebar</label>
+                                <span class="setting-description">Display navigation sidebar</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="show-sidebar" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Font Size</label>
+                                <span class="setting-description">Adjust text size</span>
+                            </div>
+                            <select id="font-size-select" class="setting-select">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                                <option value="extra-large">Extra Large</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Data Management</h3>
+                    <div class="settings-card">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Export Data</label>
+                                <span class="setting-description">Download your data as JSON file</span>
+                            </div>
+                            <button id="export-data-btn" class="setting-button">Export</button>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Import Data</label>
+                                <span class="setting-description">Import data from JSON file</span>
+                            </div>
+                            <button id="import-data-btn" class="setting-button">Import</button>
+                            <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Clear All Data</label>
+                                <span class="setting-description">Permanently delete all your data</span>
+                            </div>
+                            <button id="clear-data-btn" class="setting-button danger">Clear Data</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Section -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">About</h3>
+                    <div class="settings-card">
+                        <div class="about-info">
+                            <h4>Personal Manager</h4>
+                            <p class="version">Version 1.0.0</p>
+                            <p class="description">A comprehensive personal management application to help you organize your life efficiently.</p>
+                            <div class="about-links">
+                                <button id="check-updates-btn" class="setting-button">Check for Updates</button>
+                                <button id="view-license-btn" class="setting-button">View License</button>
+                                <button id="contact-support-btn" class="setting-button">Contact Support</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -193,6 +514,140 @@
                     <!-- Contact entries will be populated here -->
                 </tbody>
             </table>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profile" class="tab-content">
+            <div class="section-header">
+                <h2 class="section-title">My Profile</h2>
+                <button id="edit-profile-btn" class="action-btn">Edit Profile</button>
+            </div>
+            
+            <div class="profile-container">
+                <div class="profile-card">
+                    <div class="profile-avatar-section">
+                        <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Profile Avatar" class="profile-avatar" id="profile-avatar">
+                        <button id="change-avatar-btn" class="btn-secondary">Change Avatar</button>
+                        <input type="file" id="avatar-input" accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <div class="profile-info">
+                        <div class="profile-field">
+                            <label class="profile-label">Full Name</label>
+                            <div class="profile-value" id="profile-name">John Doe</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label class="profile-label">Email</label>
+                            <div class="profile-value" id="profile-email">john.doe@example.com</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label class="profile-label">Phone</label>
+                            <div class="profile-value" id="profile-phone">+1 (555) 123-4567</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label class="profile-label">Job Title</label>
+                            <div class="profile-value" id="profile-job">Product Manager</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label class="profile-label">Department</label>
+                            <div class="profile-value" id="profile-department">Technology</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label class="profile-label">Location</label>
+                            <div class="profile-value" id="profile-location">New York, NY</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label class="profile-label">Bio</label>
+                            <div class="profile-value" id="profile-bio">Passionate about technology and innovation. I enjoy creating solutions that make people's lives easier and more productive.</div>
+                        </div>
+                        
+                        <div class="profile-field">
+                            <label class="profile-label">Joined Date</label>
+                            <div class="profile-value" id="profile-joined">January 15, 2024</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-stats">
+                    <h3 class="card-title">Profile Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-expenses">0</div>
+                            <div class="stat-label">Total Expenses</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-projects">0</div>
+                            <div class="stat-label">Projects</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-ideas">0</div>
+                            <div class="stat-label">Ideas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="total-contacts">0</div>
+                            <div class="stat-label">Contacts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="training-sessions">0</div>
+                            <div class="stat-label">Training Sessions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="active-days">0</div>
+                            <div class="stat-label">Active Days</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Edit Modal -->
+    <div id="profile-edit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Profile</h2>
+                <span id="close-profile-modal" class="close">&times;</span>
+            </div>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="edit-profile-name" class="form-label">Full Name</label>
+                    <input type="text" id="edit-profile-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-email" class="form-label">Email</label>
+                    <input type="email" id="edit-profile-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-phone" class="form-label">Phone</label>
+                    <input type="tel" id="edit-profile-phone" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-job" class="form-label">Job Title</label>
+                    <input type="text" id="edit-profile-job" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-department" class="form-label">Department</label>
+                    <input type="text" id="edit-profile-department" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-location" class="form-label">Location</label>
+                    <input type="text" id="edit-profile-location" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="edit-profile-bio" class="form-label">Bio</label>
+                    <textarea id="edit-profile-bio" class="form-textarea" rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancel-profile-edit" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="action-btn">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -388,8 +843,559 @@
             </form>
         </div>
     </div>
+</div>
 
-    <!-- Include the renderer script -->
-    <script src="renderer.js"></script>
+<script>
+    // Settings data storage
+    let settingsData = {
+        theme: 'light',
+        language: 'en',
+        currency: 'USD',
+        dateFormat: 'MM/DD/YYYY',
+        desktopNotifications: true,
+        emailNotifications: false,
+        taskReminders: true,
+        expenseAlerts: true,
+        autoLock: 'never',
+        autoBackup: true,
+        analyticsSharing: false,
+        compactView: false,
+        showSidebar: true,
+        fontSize: 'medium'
+    };
+    let profileData = {
+        name: 'John Doe',
+        email: 'john.doe@example.com',
+        phone: '+1 (555) 123-4567',
+        job: 'Product Manager',
+        department: 'Technology',
+        location: 'New York, NY',
+        bio: 'Passionate about technology and innovation. I enjoy creating solutions that make people\'s lives easier and more productive.',
+        avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+        joined: 'January 15, 2024'
+    };
+
+    // Initialize profile and settings data on page load
+    function initializeProfile() {
+        document.getElementById('profile-name').textContent = profileData.name;
+        document.getElementById('profile-email').textContent = profileData.email;
+        document.getElementById('profile-phone').textContent = profileData.phone;
+        document.getElementById('profile-job').textContent = profileData.job;
+        document.getElementById('profile-department').textContent = profileData.department;
+        document.getElementById('profile-location').textContent = profileData.location;
+        document.getElementById('profile-bio').textContent = profileData.bio;
+        document.getElementById('profile-joined').textContent = profileData.joined;
+        document.getElementById('profile-avatar').src = profileData.avatar;
+        
+        // Update topbar avatar and name
+        document.querySelector('.topbar .avatar').src = profileData.avatar;
+        document.querySelector('.topbar .profile span:nth-of-type(1)').textContent = profileData.name;
+        
+        // Update statistics (placeholder values - you can connect these to actual data)
+        updateProfileStats();
+    }
+
+    function initializeSettings() {
+        // Populate settings form with current data
+        document.getElementById('theme-select').value = settingsData.theme;
+        document.getElementById('language-select').value = settingsData.language;
+        document.getElementById('currency-select').value = settingsData.currency;
+        document.getElementById('date-format-select').value = settingsData.dateFormat;
+        document.getElementById('desktop-notifications').checked = settingsData.desktopNotifications;
+        document.getElementById('email-notifications').checked = settingsData.emailNotifications;
+        document.getElementById('task-reminders').checked = settingsData.taskReminders;
+        document.getElementById('expense-alerts').checked = settingsData.expenseAlerts;
+        document.getElementById('auto-lock-select').value = settingsData.autoLock;
+        document.getElementById('auto-backup').checked = settingsData.autoBackup;
+        document.getElementById('analytics-sharing').checked = settingsData.analyticsSharing;
+        document.getElementById('compact-view').checked = settingsData.compactView;
+        document.getElementById('show-sidebar').checked = settingsData.showSidebar;
+        document.getElementById('font-size-select').value = settingsData.fontSize;
+        
+        // Apply current settings
+        applyTheme(settingsData.theme);
+        applyFontSize(settingsData.fontSize);
+    }
+
+    function applyTheme(theme) {
+        document.body.className = theme === 'dark' ? 'dark-theme' : '';
+        if (theme === 'auto') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.className = prefersDark ? 'dark-theme' : '';
+        }
+    }
+
+    function applyFontSize(size) {
+        const sizeMap = {
+            'small': '14px',
+            'medium': '16px',
+            'large': '18px',
+            'extra-large': '20px'
+        };
+        document.documentElement.style.fontSize = sizeMap[size] || '16px';
+    }
+
+    function updateProfileStats() {
+        // These would typically be calculated from your actual data
+        document.getElementById('total-expenses').textContent = '24';
+        document.getElementById('total-projects').textContent = '8';
+        document.getElementById('total-ideas').textContent = '15';
+        document.getElementById('total-contacts').textContent = '42';
+        document.getElementById('training-sessions').textContent = '18';
+        document.getElementById('active-days').textContent = '127';
+    }
+
+    // Profile functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize profile and settings
+        initializeProfile();
+        initializeSettings();
+
+        // Profile dropdown functionality
+        const toggle = document.getElementById('profile-dropdown-toggle');
+        const dropdown = document.getElementById('profile-dropdown');
+        const profileLink = document.getElementById('profile-link');
+        const settingsLink = document.getElementById('settings-link');
+    
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+    
+        document.addEventListener('click', function () {
+            dropdown.style.display = 'none';
+        });
+
+        // Profile link click handler
+        profileLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdown.style.display = 'none';
+            switchToTab('profile');
+        });
+
+        // Settings link click handler
+        settingsLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            dropdown.style.display = 'none';
+            switchToTab('settings');
+        });
+
+        // Tab switching functionality
+        const navLinks = document.querySelectorAll('.nav-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabName = this.getAttribute('data-tab');
+                switchToTab(tabName);
+            });
+        });
+
+        function switchToTab(tabName) {
+            // Remove active class from all nav links and tab contents
+            navLinks.forEach(link => link.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Add active class to selected nav link and tab content
+            const selectedNavLink = document.querySelector(`[data-tab="${tabName}"]`);
+            const selectedTabContent = document.getElementById(tabName);
+            
+            if (selectedNavLink && selectedTabContent) {
+                selectedNavLink.classList.add('active');
+                selectedTabContent.classList.add('active');
+            }
+        }
+
+        // Profile edit functionality
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        const profileModal = document.getElementById('profile-edit-modal');
+        const closeProfileModal = document.getElementById('close-profile-modal');
+        const cancelProfileEdit = document.getElementById('cancel-profile-edit');
+        const profileForm = document.getElementById('profile-form');
+
+        editProfileBtn.addEventListener('click', function() {
+            // Populate form with current profile data
+            document.getElementById('edit-profile-name').value = profileData.name;
+            document.getElementById('edit-profile-email').value = profileData.email;
+            document.getElementById('edit-profile-phone').value = profileData.phone;
+            document.getElementById('edit-profile-job').value = profileData.job;
+            document.getElementById('edit-profile-department').value = profileData.department;
+            document.getElementById('edit-profile-location').value = profileData.location;
+            document.getElementById('edit-profile-bio').value = profileData.bio;
+            
+            profileModal.style.display = 'block';
+        });
+
+        closeProfileModal.addEventListener('click', function() {
+            profileModal.style.display = 'none';
+        });
+
+        cancelProfileEdit.addEventListener('click', function() {
+            profileModal.style.display = 'none';
+        });
+
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Update profile data
+            profileData.name = document.getElementById('edit-profile-name').value;
+            profileData.email = document.getElementById('edit-profile-email').value;
+            profileData.phone = document.getElementById('edit-profile-phone').value;
+            profileData.job = document.getElementById('edit-profile-job').value;
+            profileData.department = document.getElementById('edit-profile-department').value;
+            profileData.location = document.getElementById('edit-profile-location').value;
+            profileData.bio = document.getElementById('edit-profile-bio').value;
+            
+            // Update profile display
+            initializeProfile();
+            
+            // Close modal
+            profileModal.style.display = 'none';
+            
+            // Show success message (you can customize this)
+            alert('Profile updated successfully!');
+        });
+
+        // Avatar change functionality
+        const changeAvatarBtn = document.getElementById('change-avatar-btn');
+        const avatarInput = document.getElementById('avatar-input');
+
+        changeAvatarBtn.addEventListener('click', function() {
+            avatarInput.click();
+        });
+
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profileData.avatar = e.target.result;
+                    document.getElementById('profile-avatar').src = profileData.avatar;
+                    document.querySelector('.topbar .avatar').src = profileData.avatar;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === profileModal) {
+                profileModal.style.display = 'none';
+            }
+        });
+
+        // Settings functionality
+        setupSettingsHandlers();
+    });
+
+    function setupSettingsHandlers() {
+        // Theme change handler
+        document.getElementById('theme-select').addEventListener('change', function(e) {
+            settingsData.theme = e.target.value;
+            applyTheme(settingsData.theme);
+        });
+
+        // Language change handler
+        document.getElementById('language-select').addEventListener('change', function(e) {
+            settingsData.language = e.target.value;
+            // You can implement language switching logic here
+        });
+
+        // Currency change handler
+        document.getElementById('currency-select').addEventListener('change', function(e) {
+            settingsData.currency = e.target.value;
+        });
+
+        // Date format change handler
+        document.getElementById('date-format-select').addEventListener('change', function(e) {
+            settingsData.dateFormat = e.target.value;
+        });
+
+        // Font size change handler
+        document.getElementById('font-size-select').addEventListener('change', function(e) {
+            settingsData.fontSize = e.target.value;
+            applyFontSize(settingsData.fontSize);
+        });
+
+        // Toggle switches
+        const toggles = [
+            'desktop-notifications', 'email-notifications', 'task-reminders', 
+            'expense-alerts', 'auto-backup', 'analytics-sharing', 
+            'compact-view', 'show-sidebar'
+        ];
+
+        toggles.forEach(toggleId => {
+            document.getElementById(toggleId).addEventListener('change', function(e) {
+                const settingKey = toggleId.replace(/-([a-z])/g, function(g) {
+                    return g[1].toUpperCase();
+                });
+                settingsData[settingKey] = e.target.checked;
+            });
+        });
+
+        // Auto-lock change handler
+        document.getElementById('auto-lock-select').addEventListener('change', function(e) {
+            settingsData.autoLock = e.target.value;
+        });
+
+        // Data management buttons
+        document.getElementById('export-data-btn').addEventListener('click', function() {
+            exportData();
+        });
+
+        document.getElementById('import-data-btn').addEventListener('click', function() {
+            document.getElementById('import-file-input').click();
+        });
+
+        document.getElementById('import-file-input').addEventListener('change', function(e) {
+            importData(e.target.files[0]);
+        });
+
+        document.getElementById('clear-data-btn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
+                clearAllData();
+            }
+        });
+
+        // 2FA setup
+        document.getElementById('setup-2fa-btn').addEventListener('click', function() {
+            alert('2FA setup would be implemented here with proper authentication flow.');
+        });
+
+        // About section buttons
+        document.getElementById('check-updates-btn').addEventListener('click', function() {
+            alert('Checking for updates... You are using the latest version!');
+        });
+
+        document.getElementById('view-license-btn').addEventListener('click', function() {
+            alert('License information would be displayed here.');
+        });
+
+        document.getElementById('contact-support-btn').addEventListener('click', function() {
+            alert('Support contact information would be displayed here.');
+        });
+    }
+
+    function exportData() {
+        const data = {
+            profile: profileData,
+            settings: settingsData,
+            timestamp: new Date().toISOString()
+        };
+        
+        const dataStr = JSON.stringify(data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = 'personal-manager-data.json';
+        link.click();
+        
+        alert('Data exported successfully!');
+    }
+
+    function importData(file) {
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                if (data.profile) {
+                    Object.assign(profileData, data.profile);
+                    initializeProfile();
+                }
+                
+                if (data.settings) {
+                    Object.assign(settingsData, data.settings);
+                    initializeSettings();
+                }
+                
+                alert('Data imported successfully!');
+            } catch (error) {
+                alert('Error importing data: Invalid file format');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function clearAllData() {
+        // Reset profile data
+        profileData = {
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '+1 (555) 123-4567',
+            job: 'Product Manager',
+            department: 'Technology',
+            location: 'New York, NY',
+            bio: 'Passionate about technology and innovation.',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+            joined: 'January 15, 2024'
+        };
+        
+        // Reset settings data
+        settingsData = {
+            theme: 'light',
+            language: 'en',
+            currency: 'USD',
+            dateFormat: 'MM/DD/YYYY',
+            desktopNotifications: true,
+            emailNotifications: false,
+            taskReminders: true,
+            expenseAlerts: true,
+            autoLock: 'never',
+            autoBackup: true,
+            analyticsSharing: false,
+            compactView: false,
+            showSidebar: true,
+            fontSize: 'medium'
+        };
+        
+        // Reinitialize
+        initializeProfile();
+        initializeSettings();
+        
+        alert('All data has been cleared!');
+    }
+</script>
+
+<style>
+/* Profile-specific styles */
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    min-width: 200px;
+}
+
+.profile-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #e9ecef;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.profile-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-value {
+    color: #212529;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.profile-stats {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    border-color: #007bff;
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Responsive design for profile */
+@media (max-width: 768px) {
+    .profile-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-avatar-section {
+        min-width: auto;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+    }
+}
+</style>
+
+<!-- Include the renderer script -->
+<script src="renderer.js"></script>
+
 </body>
 </html>
