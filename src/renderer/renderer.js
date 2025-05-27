@@ -1,15 +1,16 @@
-// Global variables for charts
-let expensesChart, projectsChart, monthlyExpensesChart, trainingChart;
+import { renderDashboard, populateSampleData } from './js/dashboard.js';
+import { renderExpenses, openExpenseModal, closeExpenseModal, addExpense, editExpense, updateExpense, deleteExpense } from './js/expenses.js';
+import { renderIdeas, openIdeaModal, closeIdeaModal, addIdea, editIdea, updateIdea, deleteIdea } from './js/ideas.js';
+import { renderProjects, openProjectModal, closeProjectModal, addProject, editProject, updateProject, deleteProject } from './js/projects.js';
+import { renderTraining, openTrainingModal, closeTrainingModal, addTraining, editTraining, updateTraining, deleteTraining } from './js/training.js';
+import { renderContacts, openContactModal, closeContactModal, addContact, editContact, updateContact, deleteContact } from './js/contacts.js';
+import { updateCurrentDate,setupCalendar } from './js/calender.js';
+import { setupTodoList } from './js/todo.js';
+import { initializeProfile, profileData } from './js/profile.js';
+import { initializeSettings,setupSettingsHandlers } from './js/settings.js';
+import { initCryptoTracker } from './js/crypto.js';
 
-// Helper functions
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
+
 
 // Navigation
 document.querySelectorAll('.nav-link').forEach(link => {
@@ -52,896 +53,6 @@ document.querySelectorAll('.nav-link').forEach(link => {
         }
     });
 });
-
-// Dashboard Functions
-async function renderDashboard() {
-    document.getElementById('current-date').textContent = window.electronAPI.formatDate(new Date());
-    await renderExpensesChart();
-    await renderProjectsChart();
-    await renderActivityLog();
-}
-
-async function renderExpensesChart() {
-    try {
-        const categoryData = await window.electronAPI.dbGetExpenseCategories();
-        
-        const ctx = document.getElementById('expenses-chart').getContext('2d');
-        
-        // Destroy previous chart if it exists
-        if (expensesChart) {
-            expensesChart.destroy();
-        }
-        
-        expensesChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: categoryData.map(item => item.category),
-                datasets: [{
-                    data: categoryData.map(item => item.total),
-                    backgroundColor: [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
-                        '#9966FF', '#FF9F40', '#C9CBCF'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = window.electronAPI.formatCurrency(context.raw);
-                                return `${label}: ${value}`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error rendering expenses chart:', error);
-    }
-}
-
-async function renderProjectsChart() {
-    try {
-        const statusData = await window.electronAPI.dbGetProjectStatusCounts();
-        const statusCounts = {
-            todo: 0,
-            progress: 0,
-            done: 0
-        };
-        
-        statusData.forEach(item => {
-            statusCounts[item.status] = item.count;
-        });
-        
-        const ctx = document.getElementById('projects-chart').getContext('2d');
-        
-        // Destroy previous chart if it exists
-        if (projectsChart) {
-            projectsChart.destroy();
-        }
-        
-        projectsChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['To Do', 'In Progress', 'Done'],
-                datasets: [{
-                    data: [statusCounts.todo, statusCounts.progress, statusCounts.done],
-                    backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error rendering projects chart:', error);
-    }
-}
-
-async function renderActivityLog() {
-    try {
-        const activities = await window.electronAPI.dbGetRecentActivities(10);
-        const activityLog = document.getElementById('activity-log');
-        activityLog.innerHTML = '';
-        
-        activities.forEach(activity => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${window.electronAPI.formatDate(activity.date)}</td>
-                <td>${activity.category}</td>
-                <td>${activity.description}</td>
-            `;
-            activityLog.appendChild(row);
-        });
-    } catch (error) {
-        console.error('Error rendering activity log:', error);
-    }
-}
-
-// Expenses Functions
-async function renderExpenses() {
-    try {
-        const expenses = await window.electronAPI.dbGetAll('expenses');
-        const expenseTable = document.getElementById('expense-table');
-        expenseTable.innerHTML = '';
-        
-        expenses.forEach(expense => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${window.electronAPI.formatDate(expense.date)}</td>
-                <td><span class="badge category-${expense.category.toLowerCase()}">${expense.category}</span></td>
-                <td>${expense.description}</td>
-                <td>${window.electronAPI.formatCurrency(expense.amount)}</td>
-                <td>
-                    <button class="action-btn edit-expense" data-id="${expense.id}">Edit</button>
-                    <button class="action-btn delete-btn delete-expense" data-id="${expense.id}">Delete</button>
-                </td>
-            `;
-            expenseTable.appendChild(row);
-        });
-        
-        await renderMonthlyExpensesChart();
-        
-        // Add event listeners to edit/delete buttons
-        document.querySelectorAll('.edit-expense').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                editExpense(id);
-            });
-        });
-        
-        document.querySelectorAll('.delete-expense').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                deleteExpense(id);
-            });
-        });
-    } catch (error) {
-        console.error('Error rendering expenses:', error);
-    }
-}
-
-async function renderMonthlyExpensesChart() {
-    try {
-        const monthlyData = await window.electronAPI.dbGetMonthlyExpenses();
-        
-        const monthLabels = monthlyData.map(item => {
-            const [year, month] = item.month.split('-');
-            return new Date(year, month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        });
-        
-        const ctx = document.getElementById('monthly-expenses-chart').getContext('2d');
-        
-        if (monthlyExpensesChart) {
-            monthlyExpensesChart.destroy();
-        }
-        
-        monthlyExpensesChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: monthLabels,
-                datasets: [{
-                    label: 'Monthly Expenses',
-                    data: monthlyData.map(item => item.total),
-                    backgroundColor: '#3a7bd5'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return window.electronAPI.formatCurrency(value);
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return window.electronAPI.formatCurrency(context.raw);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error rendering monthly expenses chart:', error);
-    }
-}
-
-function openExpenseModal(editing = false) {
-    document.getElementById('expense-modal-title').textContent = editing ? 'Edit Expense' : 'Add Expense';
-    document.getElementById('expense-modal').style.display = 'block';
-}
-
-function closeExpenseModal() {
-    document.getElementById('expense-modal').style.display = 'none';
-    document.getElementById('expense-form').reset();
-    document.getElementById('expense-id').value = '';
-}
-
-async function addExpense(expense) {
-    try {
-        await window.electronAPI.dbInsert('expenses', expense);
-        
-        // Add to activity log
-        await addActivity('Expense', `Added expense: ${expense.description} (${window.electronAPI.formatCurrency(expense.amount)})`);
-        
-        await renderExpenses();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error adding expense:', error);
-        alert('Error adding expense. Please try again.');
-    }
-}
-
-async function editExpense(id) {
-    try {
-        const expense = await window.electronAPI.dbGetById('expenses', id);
-        
-        if (expense) {
-            document.getElementById('expense-id').value = expense.id;
-            document.getElementById('expense-date').value = expense.date;
-            document.getElementById('expense-category').value = expense.category;
-            document.getElementById('expense-description').value = expense.description;
-            document.getElementById('expense-amount').value = expense.amount;
-            
-            openExpenseModal(true);
-        }
-    } catch (error) {
-        console.error('Error loading expense for edit:', error);
-    }
-}
-
-async function updateExpense(updatedExpense) {
-    try {
-        await window.electronAPI.dbUpdate('expenses', updatedExpense.id, {
-            date: updatedExpense.date,
-            category: updatedExpense.category,
-            description: updatedExpense.description,
-            amount: updatedExpense.amount
-        });
-        
-        // Add to activity log
-        await addActivity('Expense', `Updated expense: ${updatedExpense.description} (${window.electronAPI.formatCurrency(updatedExpense.amount)})`);
-        
-        await renderExpenses();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error updating expense:', error);
-        alert('Error updating expense. Please try again.');
-    }
-}
-
-async function deleteExpense(id) {
-    if (confirm('Are you sure you want to delete this expense?')) {
-        try {
-            await window.electronAPI.dbDelete('expenses', id);
-            
-            // Add to activity log
-            await addActivity('Expense', 'Deleted an expense');
-            
-            await renderExpenses();
-            await renderDashboard();
-        } catch (error) {
-            console.error('Error deleting expense:', error);
-            alert('Error deleting expense. Please try again.');
-        }
-    }
-}
-
-// Ideas Functions
-async function renderIdeas() {
-    try {
-        const ideas = await window.electronAPI.dbGetAll('ideas');
-        const ideasContainer = document.getElementById('ideas-container');
-        ideasContainer.innerHTML = '';
-        
-        ideas.forEach(idea => {
-            const ideaCard = document.createElement('div');
-            ideaCard.className = 'idea-card';
-            
-            // Parse tags from database (stored as comma-separated string)
-            const tags = idea.tags ? idea.tags.split(',') : [];
-            const tagElements = tags.map(tag => `<span class="idea-tag">${tag.trim()}</span>`).join('');
-            
-            ideaCard.innerHTML = `
-                <div class="idea-card-header">
-                    <h3 class="idea-title">${idea.title}</h3>
-                    <span class="idea-date">${window.electronAPI.formatDate(idea.date)}</span>
-                </div>
-                <div class="idea-content">${idea.description}</div>
-                <div class="idea-tags">${tagElements}</div>
-                <div style="margin-top: 1rem; text-align: right;">
-                    <button class="action-btn edit-idea" data-id="${idea.id}">Edit</button>
-                    <button class="action-btn delete-btn delete-idea" data-id="${idea.id}">Delete</button>
-                </div>
-            `;
-            
-            ideasContainer.appendChild(ideaCard);
-        });
-        
-        // Add event listeners to edit/delete buttons
-        document.querySelectorAll('.edit-idea').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                editIdea(id);
-            });
-        });
-        
-        document.querySelectorAll('.delete-idea').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                deleteIdea(id);
-            });
-        });
-    } catch (error) {
-        console.error('Error rendering ideas:', error);
-    }
-}
-
-function openIdeaModal(editing = false) {
-    document.getElementById('idea-modal-title').textContent = editing ? 'Edit Idea' : 'Add Idea';
-    document.getElementById('idea-modal').style.display = 'block';
-}
-
-function closeIdeaModal() {
-    document.getElementById('idea-modal').style.display = 'none';
-    document.getElementById('idea-form').reset();
-    document.getElementById('idea-id').value = '';
-}
-
-async function addIdea(idea) {
-    try {
-        await window.electronAPI.dbInsert('ideas', idea);
-        
-        // Add to activity log
-        await addActivity('Idea', `Added idea: ${idea.title}`);
-        
-        await renderIdeas();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error adding idea:', error);
-        alert('Error adding idea. Please try again.');
-    }
-}
-
-async function editIdea(id) {
-    try {
-        const idea = await window.electronAPI.dbGetById('ideas', id);
-        
-        if (idea) {
-            document.getElementById('idea-id').value = idea.id;
-            document.getElementById('idea-title').value = idea.title;
-            document.getElementById('idea-description').value = idea.description;
-            document.getElementById('idea-tags').value = idea.tags || '';
-            
-            openIdeaModal(true);
-        }
-    } catch (error) {
-        console.error('Error loading idea for edit:', error);
-    }
-}
-
-async function updateIdea(updatedIdea) {
-    try {
-        await window.electronAPI.dbUpdate('ideas', updatedIdea.id, {
-            title: updatedIdea.title,
-            description: updatedIdea.description,
-            tags: updatedIdea.tags,
-            date: updatedIdea.date
-        });
-        
-        // Add to activity log
-        await addActivity('Idea', `Updated idea: ${updatedIdea.title}`);
-        
-        await renderIdeas();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error updating idea:', error);
-        alert('Error updating idea. Please try again.');
-    }
-}
-
-async function deleteIdea(id) {
-    if (confirm('Are you sure you want to delete this idea?')) {
-        try {
-            await window.electronAPI.dbDelete('ideas', id);
-            
-            // Add to activity log
-            await addActivity('Idea', 'Deleted an idea');
-            
-            await renderIdeas();
-            await renderDashboard();
-        } catch (error) {
-            console.error('Error deleting idea:', error);
-            alert('Error deleting idea. Please try again.');
-        }
-    }
-}
-
-// Projects Functions
-async function renderProjects() {
-    try {
-        const projects = await window.electronAPI.dbGetAll('projects');
-        
-        const todoColumn = document.getElementById('todo-column');
-        const progressColumn = document.getElementById('progress-column');
-        const doneColumn = document.getElementById('done-column');
-        
-        todoColumn.innerHTML = '';
-        progressColumn.innerHTML = '';
-        doneColumn.innerHTML = '';
-        
-        projects.forEach(project => {
-            const projectElement = document.createElement('div');
-            projectElement.className = 'kanban-task';
-            projectElement.setAttribute('data-id', project.id);
-            
-            let priorityClass = '';
-            switch (project.priority) {
-                case 'high': priorityClass = 'badge-danger'; break;
-                case 'medium': priorityClass = 'badge-warning'; break;
-                case 'low': priorityClass = 'badge-success'; break;
-            }
-            
-            projectElement.innerHTML = `
-                <div class="kanban-task-title">${project.title}</div>
-                <div class="kanban-task-description">${project.description}</div>
-                <div class="kanban-task-meta">
-                    <span class="badge ${priorityClass}">${project.priority.charAt(0).toUpperCase() + project.priority.slice(1)}</span>
-                    ${project.due_date ? `<span>Due: ${window.electronAPI.formatDate(project.due_date)}</span>` : ''}
-                </div>
-                <div style="margin-top: 0.5rem; text-align: right;">
-                    <button class="action-btn edit-project" data-id="${project.id}">Edit</button>
-                    <button class="action-btn delete-btn delete-project" data-id="${project.id}">Delete</button>
-                </div>
-            `;
-            
-            switch (project.status) {
-                case 'todo':
-                    todoColumn.appendChild(projectElement);
-                    break;
-                case 'progress':
-                    progressColumn.appendChild(projectElement);
-                    break;
-                case 'done':
-                    doneColumn.appendChild(projectElement);
-                    break;
-            }
-        });
-        
-        // Add event listeners to edit/delete buttons
-        document.querySelectorAll('.edit-project').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                editProject(id);
-            });
-        });
-        
-        document.querySelectorAll('.delete-project').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                deleteProject(id);
-            });
-        });
-    } catch (error) {
-        console.error('Error rendering projects:', error);
-    }
-}
-
-function openProjectModal(editing = false) {
-    document.getElementById('project-modal-title').textContent = editing ? 'Edit Project' : 'Add Project';
-    document.getElementById('project-modal').style.display = 'block';
-}
-
-function closeProjectModal() {
-    document.getElementById('project-modal').style.display = 'none';
-    document.getElementById('project-form').reset();
-    document.getElementById('project-id').value = '';
-}
-
-async function addProject(project) {
-    try {
-        await window.electronAPI.dbInsert('projects', project);
-        
-        // Add to activity log
-        await addActivity('Project', `Added project: ${project.title}`);
-        
-        await renderProjects();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error adding project:', error);
-        alert('Error adding project. Please try again.');
-    }
-}
-
-async function editProject(id) {
-    try {
-        const project = await window.electronAPI.dbGetById('projects', id);
-        
-        if (project) {
-            document.getElementById('project-id').value = project.id;
-            document.getElementById('project-title').value = project.title;
-            document.getElementById('project-description').value = project.description;
-            document.getElementById('project-due-date').value = project.due_date || '';
-            document.getElementById('project-status').value = project.status;
-            document.getElementById('project-priority').value = project.priority;
-            
-            openProjectModal(true);
-        }
-    } catch (error) {
-        console.error('Error loading project for edit:', error);
-    }
-}
-
-async function updateProject(updatedProject) {
-    try {
-        await window.electronAPI.dbUpdate('projects', updatedProject.id, {
-            title: updatedProject.title,
-            description: updatedProject.description,
-            due_date: updatedProject.dueDate,
-            status: updatedProject.status,
-            priority: updatedProject.priority
-        });
-        
-        // Add to activity log
-        await addActivity('Project', `Updated project: ${updatedProject.title}`);
-        
-        await renderProjects();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error updating project:', error);
-        alert('Error updating project. Please try again.');
-    }
-}
-
-async function deleteProject(id) {
-    if (confirm('Are you sure you want to delete this project?')) {
-        try {
-            await window.electronAPI.dbDelete('projects', id);
-            
-            // Add to activity log
-            await addActivity('Project', 'Deleted a project');
-            
-            await renderProjects();
-            await renderDashboard();
-        } catch (error) {
-            console.error('Error deleting project:', error);
-            alert('Error deleting project. Please try again.');
-        }
-    }
-}
-
-// Training Functions
-async function renderTraining() {
-    try {
-        const trainingSessions = await window.electronAPI.dbGetAll('training');
-        const trainingTable = document.getElementById('training-table');
-        trainingTable.innerHTML = '';
-        
-        trainingSessions.forEach(session => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${window.electronAPI.formatDate(session.date)}</td>
-                <td>${session.activity}</td>
-                <td>${session.duration} minutes</td>
-                <td>${session.notes || ''}</td>
-                <td>
-                    <button class="action-btn edit-training" data-id="${session.id}">Edit</button>
-                    <button class="action-btn delete-btn delete-training" data-id="${session.id}">Delete</button>
-                </td>
-            `;
-            trainingTable.appendChild(row);
-        });
-        
-        await renderTrainingChart();
-        
-        // Add event listeners to edit/delete buttons
-        document.querySelectorAll('.edit-training').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                editTraining(id);
-            });
-        });
-        
-        document.querySelectorAll('.delete-training').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                deleteTraining(id);
-            });
-        });
-    } catch (error) {
-        console.error('Error rendering training:', error);
-    }
-}
-
-async function renderTrainingChart() {
-    try {
-        const weeklyData = await window.electronAPI.dbGetTrainingWeekly();
-        
-        const ctx = document.getElementById('training-chart').getContext('2d');
-        
-        if (trainingChart) {
-            trainingChart.destroy();
-        }
-        
-        trainingChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: weeklyData.map(item => {
-                    if (item.week) {
-                        const [year, week] = item.week.split('-W');
-                        return `Week ${week}, ${year}`;
-                    }
-                    return 'Unknown';
-                }),
-                datasets: [{
-                    label: 'Training Minutes',
-                    data: weeklyData.map(item => item.total_duration || 0),
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                    fill: true,
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Minutes'
-                        }
-                    }
-                }
-            }
-        });
-    } catch (error) {
-        console.error('Error rendering training chart:', error);
-    }
-}
-
-function openTrainingModal(editing = false) {
-    document.getElementById('training-modal-title').textContent = editing ? 'Edit Training' : 'Add Training';
-    document.getElementById('training-modal').style.display = 'block';
-}
-
-function closeTrainingModal() {
-    document.getElementById('training-modal').style.display = 'none';
-    document.getElementById('training-form').reset();
-    document.getElementById('training-id').value = '';
-}
-
-async function addTraining(training) {
-    try {
-        await window.electronAPI.dbInsert('training', training);
-        
-        // Add to activity log
-        await addActivity('Training', `Completed ${training.activity} for ${training.duration} minutes`);
-        
-        await renderTraining();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error adding training:', error);
-        alert('Error adding training. Please try again.');
-    }
-}
-
-async function editTraining(id) {
-    try {
-        const training = await window.electronAPI.dbGetById('training', id);
-        
-        if (training) {
-            document.getElementById('training-id').value = training.id;
-            document.getElementById('training-date').value = training.date;
-            document.getElementById('training-activity').value = training.activity;
-            document.getElementById('training-duration').value = training.duration;
-            document.getElementById('training-notes').value = training.notes || '';
-            
-            openTrainingModal(true);
-        }
-    } catch (error) {
-        console.error('Error loading training for edit:', error);
-    }
-}
-
-async function updateTraining(updatedTraining) {
-    try {
-        await window.electronAPI.dbUpdate('training', updatedTraining.id, {
-            date: updatedTraining.date,
-            activity: updatedTraining.activity,
-            duration: updatedTraining.duration,
-            notes: updatedTraining.notes
-        });
-        
-        // Add to activity log
-        await addActivity('Training', `Updated training: ${updatedTraining.activity} for ${updatedTraining.duration} minutes`);
-        
-        await renderTraining();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error updating training:', error);
-        alert('Error updating training. Please try again.');
-    }
-}
-
-async function deleteTraining(id) {
-    if (confirm('Are you sure you want to delete this training session?')) {
-        try {
-            await window.electronAPI.dbDelete('training', id);
-            
-            // Add to activity log
-            await addActivity('Training', 'Deleted a training session');
-            
-            await renderTraining();
-            await renderDashboard();
-        } catch (error) {
-            console.error('Error deleting training:', error);
-            alert('Error deleting training. Please try again.');
-        }
-    }
-}
-
-// Contacts Functions
-async function renderContacts() {
-    try {
-        const contacts = await window.electronAPI.dbGetAll('contacts');
-        const contactsTable = document.getElementById('contacts-table');
-        contactsTable.innerHTML = '';
-        
-        // Sort alphabetically by name
-        contacts.sort((a, b) => a.name.localeCompare(b.name));
-        
-        contacts.forEach(contact => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${contact.name}</td>
-                <td>${contact.email || '-'}</td>
-                <td>${contact.phone || '-'}</td>
-                <td>${contact.category || '-'}</td>
-                <td>
-                    <button class="action-btn edit-contact" data-id="${contact.id}">Edit</button>
-                    <button class="action-btn delete-btn delete-contact" data-id="${contact.id}">Delete</button>
-                </td>
-            `;
-            contactsTable.appendChild(row);
-        });
-        
-        // Add event listeners to edit/delete buttons
-        document.querySelectorAll('.edit-contact').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                editContact(id);
-            });
-        });
-        
-        document.querySelectorAll('.delete-contact').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = parseInt(this.getAttribute('data-id'));
-                deleteContact(id);
-            });
-        });
-    } catch (error) {
-        console.error('Error rendering contacts:', error);
-    }
-}
-
-function openContactModal(editing = false) {
-    document.getElementById('contact-modal-title').textContent = editing ? 'Edit Contact' : 'Add Contact';
-    document.getElementById('contact-modal').style.display = 'block';
-}
-
-function closeContactModal() {
-    document.getElementById('contact-modal').style.display = 'none';
-    document.getElementById('contact-form').reset();
-    document.getElementById('contact-id').value = '';
-}
-
-async function addContact(contact) {
-    try {
-        await window.electronAPI.dbInsert('contacts', contact);
-        
-        // Add to activity log
-        await addActivity('Contact', `Added contact: ${contact.name}`);
-        
-        await renderContacts();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error adding contact:', error);
-        alert('Error adding contact. Please try again.');
-    }
-}
-
-async function editContact(id) {
-    try {
-        const contact = await window.electronAPI.dbGetById('contacts', id);
-        
-        if (contact) {
-            document.getElementById('contact-id').value = contact.id;
-            document.getElementById('contact-name').value = contact.name;
-            document.getElementById('contact-email').value = contact.email || '';
-            document.getElementById('contact-phone').value = contact.phone || '';
-            document.getElementById('contact-category').value = contact.category || '';
-            document.getElementById('contact-notes').value = contact.notes || '';
-            
-            openContactModal(true);
-        }
-    } catch (error) {
-        console.error('Error loading contact for edit:', error);
-    }
-}
-
-async function updateContact(updatedContact) {
-    try {
-        await window.electronAPI.dbUpdate('contacts', updatedContact.id, {
-            name: updatedContact.name,
-            email: updatedContact.email,
-            phone: updatedContact.phone,
-            category: updatedContact.category,
-            notes: updatedContact.notes
-        });
-        
-        // Add to activity log
-        await addActivity('Contact', `Updated contact: ${updatedContact.name}`);
-        
-        await renderContacts();
-        await renderDashboard();
-    } catch (error) {
-        console.error('Error updating contact:', error);
-        alert('Error updating contact. Please try again.');
-    }
-}
-
-async function deleteContact(id) {
-    if (confirm('Are you sure you want to delete this contact?')) {
-        try {
-            await window.electronAPI.dbDelete('contacts', id);
-            
-            // Add to activity log
-            await addActivity('Contact', 'Deleted a contact');
-            
-            await renderContacts();
-            await renderDashboard();
-        } catch (error) {
-            console.error('Error deleting contact:', error);
-            alert('Error deleting contact. Please try again.');
-        }
-    }
-}
-
-// Helper function for activity log
-async function addActivity(category, description) {
-    try {
-        const activity = {
-            date: window.electronAPI.getCurrentDate(),
-            category: category,
-            description: description
-        };
-        
-        await window.electronAPI.dbInsert('activities', activity);
-    } catch (error) {
-        console.error('Error adding activity:', error);
-    }
-}
 
 // Search functionality
 function setupSearchListeners() {
@@ -1243,207 +354,152 @@ function setupEventListeners() {
         });
     });
 }
-// Global variables
-let currentDate = new Date();
-let todos = [];
-// Update current date display
-function updateCurrentDate() {
-    const now = new Date();
-    const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    };
-    document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
-    }
-// Calendar functionality
-function setupCalendar() {
-    renderCalendar();
-    
-    document.getElementById('prev-month').addEventListener('click', function() {
-        currentDate.setMonth(currentDate.getMonth() - 1);
-        renderCalendar();
-    });
-    
-    document.getElementById('next-month').addEventListener('click', function() {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        renderCalendar();
-    });
-    
-    // Set date picker to today
-    const today = new Date();
-    document.getElementById('date-picker').value = today.toISOString().split('T')[0];
-}
 
-function renderCalendar() {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const today = new Date();
-    
-    // Update month display
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    document.getElementById('calendar-month').textContent = `${monthNames[month]} ${year}`;
-    
-    // Clear calendar grid
-    const calendarGrid = document.getElementById('calendar-grid');
-    calendarGrid.innerHTML = '';
-    
-    // Add day headers
-    const dayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    dayHeaders.forEach(day => {
-        const dayHeader = document.createElement('div');
-        dayHeader.className = 'calendar-day-header';
-        dayHeader.textContent = day;
-        calendarGrid.appendChild(dayHeader);
+// Profile functionality
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize profile and settings
+    initializeProfile();
+    initializeSettings();
+
+    // Profile dropdown functionality
+    const toggle = document.getElementById('profile-dropdown-toggle');
+    const dropdown = document.getElementById('profile-dropdown');
+    const profileLink = document.getElementById('profile-link');
+    const settingsLink = document.getElementById('settings-link');
+
+    toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
     });
-    
-    // Get first day of month and number of days
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
-    
-    // Add previous month's trailing days
-    for (let i = firstDay - 1; i >= 0; i--) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        dayElement.textContent = daysInPrevMonth - i;
-        calendarGrid.appendChild(dayElement);
-    }
-    
-    // Add current month's days
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.textContent = day;
-        
-        // Highlight today
-        if (year === today.getFullYear() && 
-            month === today.getMonth() && 
-            day === today.getDate()) {
-            dayElement.classList.add('today');
-        }
-        
-        dayElement.addEventListener('click', function() {
-            // Handle day click
-            const selectedDate = new Date(year, month, day);
-            document.getElementById('date-picker').value = selectedDate.toISOString().split('T')[0];
+
+    document.addEventListener('click', function () {
+        dropdown.style.display = 'none';
+    });
+
+    // Profile link click handler
+    profileLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdown.style.display = 'none';
+        switchToTab('profile');
+    });
+
+    // Settings link click handler
+    settingsLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        dropdown.style.display = 'none';
+        switchToTab('settings');
+    });
+
+    // Tab switching functionality
+    const navLinks = document.querySelectorAll('.nav-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabName = this.getAttribute('data-tab');
+            switchToTab(tabName);
         });
+    });
+
+    function switchToTab(tabName) {
+        // Remove active class from all nav links and tab contents
+        navLinks.forEach(link => link.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        // Add active class to selected nav link and tab content
+        const selectedNavLink = document.querySelector(`[data-tab="${tabName}"]`);
+        const selectedTabContent = document.getElementById(tabName);
         
-        calendarGrid.appendChild(dayElement);
+        if (selectedNavLink && selectedTabContent) {
+            selectedNavLink.classList.add('active');
+            selectedTabContent.classList.add('active');
+        }
     }
-    
-    // Add next month's leading days
-    const totalCells = calendarGrid.children.length;
-    const remainingCells = 42 - totalCells; // 6 weeks * 7 days
-    for (let day = 1; day <= remainingCells; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        dayElement.textContent = day;
-        calendarGrid.appendChild(dayElement);
-    }
-}
-// To-Do List functionality
-function setupTodoList() {
-    const todoInput = document.getElementById('todo-input');
-    const todoAddBtn = document.getElementById('todo-add-btn');
-    
-    todoAddBtn.addEventListener('click', addTodo);
-    todoInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            addTodo();
+
+    // Profile edit functionality
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const profileModal = document.getElementById('profile-edit-modal');
+    const closeProfileModal = document.getElementById('close-profile-modal');
+    const cancelProfileEdit = document.getElementById('cancel-profile-edit');
+    const profileForm = document.getElementById('profile-form');
+
+    editProfileBtn.addEventListener('click', function() {
+        // Populate form with current profile data
+        document.getElementById('edit-profile-name').value = profileData.name;
+        document.getElementById('edit-profile-email').value = profileData.email;
+        document.getElementById('edit-profile-phone').value = profileData.phone;
+        document.getElementById('edit-profile-job').value = profileData.job;
+        document.getElementById('edit-profile-department').value = profileData.department;
+        document.getElementById('edit-profile-location').value = profileData.location;
+        document.getElementById('edit-profile-bio').value = profileData.bio;
+        
+        profileModal.style.display = 'block';
+    });
+
+    closeProfileModal.addEventListener('click', function() {
+        profileModal.style.display = 'none';
+    });
+
+    cancelProfileEdit.addEventListener('click', function() {
+        profileModal.style.display = 'none';
+    });
+
+    profileForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Update profile data
+        profileData.name = document.getElementById('edit-profile-name').value;
+        profileData.email = document.getElementById('edit-profile-email').value;
+        profileData.phone = document.getElementById('edit-profile-phone').value;
+        profileData.job = document.getElementById('edit-profile-job').value;
+        profileData.department = document.getElementById('edit-profile-department').value;
+        profileData.location = document.getElementById('edit-profile-location').value;
+        profileData.bio = document.getElementById('edit-profile-bio').value;
+        
+        // Update profile display
+        initializeProfile();
+        
+        // Close modal
+        profileModal.style.display = 'none';
+        
+        // Show success message (you can customize this)
+        alert('Profile updated successfully!');
+    });
+
+    // Avatar change functionality
+    const changeAvatarBtn = document.getElementById('change-avatar-btn');
+    const avatarInput = document.getElementById('avatar-input');
+
+    changeAvatarBtn.addEventListener('click', function() {
+        avatarInput.click();
+    });
+
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                profileData.avatar = e.target.result;
+                document.getElementById('profile-avatar').src = profileData.avatar;
+                document.querySelector('.topbar .avatar').src = profileData.avatar;
+            };
+            reader.readAsDataURL(file);
         }
     });
-    
-    renderTodos();
-}
 
-function addTodo() {
-    const todoInput = document.getElementById('todo-input');
-    const text = todoInput.value.trim();
-    
-    if (text) {
-        const todo = {
-            id: Date.now(),
-            text: text,
-            completed: false,
-            createdAt: new Date()
-        };
-        
-        todos.unshift(todo);
-        todoInput.value = '';
-        renderTodos();
-    }
-}
-
-function toggleTodo(id) {
-    const todo = todos.find(t => t.id === id);
-    if (todo) {
-        todo.completed = !todo.completed;
-        renderTodos();
-    }
-}
-
-function deleteTodo(id) {
-    todos = todos.filter(t => t.id !== id);
-    renderTodos();
-}
-
-function renderTodos() {
-    const todoList = document.getElementById('todo-list');
-    todoList.innerHTML = '';
-    
-    todos.forEach(todo => {
-        const todoItem = document.createElement('li');
-        todoItem.className = 'todo-item';
-        
-        todoItem.innerHTML = `
-            <div class="todo-item-content">
-                <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
-                        onchange="toggleTodo(${todo.id})">
-                <span class="todo-text ${todo.completed ? 'completed' : ''}">${todo.text}</span>
-            </div>
-            <button class="todo-delete-btn" onclick="deleteTodo(${todo.id})">✕</button>
-        `;
-        
-        todoList.appendChild(todoItem);
+    // Close modals when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === profileModal) {
+            profileModal.style.display = 'none';
+        }
     });
-}
-// Sample data and charts
-function populateSampleData() {
-    // Add sample todos
-    todos = [
-        { id: 1, text: 'Review project proposals', completed: false, createdAt: new Date() },
-        { id: 2, text: 'Schedule team meeting', completed: true, createdAt: new Date() },
-        { id: 3, text: 'Update website content', completed: false, createdAt: new Date() },
-        { id: 4, text: 'Prepare monthly report', completed: false, createdAt: new Date() },
-        { id: 5, text: 'Call client about feedback', completed: false, createdAt: new Date() }
-    ];
-    renderTodos();
-    
-    // Add sample activity log
-    const activityLog = document.getElementById('activity-log');
-    const sampleActivities = [
-        { date: new Date(), category: 'Task', description: 'Completed project review' },
-        { date: new Date(Date.now() - 86400000), category: 'Meeting', description: 'Team standup completed' },
-        { date: new Date(Date.now() - 172800000), category: 'Expense', description: 'Added office supplies expense' },
-        { date: new Date(Date.now() - 259200000), category: 'Project', description: 'Started new website redesign' },
-        { date: new Date(Date.now() - 345600000), category: 'Training', description: 'Completed 45-minute workout' }
-    ];
-    
-    sampleActivities.forEach(activity => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${activity.date.toLocaleDateString()}</td>
-            <td>${activity.category}</td>
-            <td>${activity.description}</td>
-        `;
-        activityLog.appendChild(row);
-    });
-}
+
+    // Settings functionality
+    setupSettingsHandlers();
+});
+ 
+
 // Initialize application
 function init() {
     setupEventListeners();
@@ -1453,7 +509,10 @@ function init() {
     setupCalendar();
     setupTodoList();
     populateSampleData();
-}
+    setupSettingsHandlers();
+    initCryptoTracker();
 
+
+}
 // Run initialization when DOM is loaded
 document.addEventListener('DOMContentLoaded', init);

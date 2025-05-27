@@ -1,0 +1,72 @@
+<!-- Nouvelle section Crypto pour le dashboard -->
+<section id="crypto-tracker" class="tab-content">
+    <h2>Crypto Trading Tracker</h2>
+    <div class="position-size">
+      <h3>Position Size Calculator</h3>
+      <label>Account Balance (USD): <input type="number" id="accountBalance" value="1000" /></label>
+      <label>Risk per Trade (%): <input type="number" id="riskPercent" value="2" /></label>
+      <label>Entry Price: <input type="number" id="entryPrice" /></label>
+      <label>Stop Loss Price: <input type="number" id="stopLossPrice" /></label>
+      <button id="calculatePositionBtn">Calculate</button>
+      <p id="positionSizeResult"></p>
+    </div>
+  
+    <form id="tradeForm">
+      <input type="text" placeholder="Crypto" id="crypto" required />
+      <input type="date" id="buyDate" required />
+      <input type="number" placeholder="Buy Price" id="buyPrice" required />
+      <input type="date" id="sellDate" required />
+      <input type="number" placeholder="Sell Price" id="sellPrice" required />
+      <input type="number" placeholder="Quantity" id="quantity" required />
+      <button type="submit">Add Trade</button>
+    </form>
+  
+    <div class="filters">
+      <label>Filter by Crypto: <select id="cryptoFilter"></select></label>
+      <label>Filter by Date: <input type="date" id="dateFilter"></label>
+      <button id="applyFilterBtn">Apply Filters</button>
+      <button id="resetFilterBtn">Reset</button>
+    </div>
+  
+    <div class="actions">
+        <button id="exportJsonBtn">Export JSON</button>
+        <button id="exportCsvBtn">Export CSV</button>
+    </div>
+  
+    <div class="summary">
+      <h3>Performance Summary</h3>
+      <p>Total Win: <span id="totalWin">0</span> USD</p>
+      <p>Total Loss: <span id="totalLoss">0</span> USD</p>
+      <p>Chiffre d'Affaire: <span id="revenue">0</span> USD</p>
+      <p>Average Return: <span id="avgReturn">0</span>%</p>
+    </div>
+  
+    <div class="risk-management">
+      <h3>Risk Management</h3>
+      <label>Max Loss per Trade: <input type="number" id="maxLoss" value="100" /></label>
+      <p id="riskAlert" style="color: orange;"></p>
+    </div>
+  
+    <canvas id="profitChart" height="100"></canvas>
+  
+    <table id="tradesTable">
+      <thead>
+        <tr>
+          <th>Crypto</th>
+          <th>Buy Date</th>
+          <th>Sell Date</th>
+          <th>Buy Price</th>
+          <th>Sell Price</th>
+          <th>Quantity</th>
+          <th>Profit/Loss</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+  
+
+
+
+

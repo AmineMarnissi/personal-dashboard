@@ -27,6 +27,9 @@ class DatabaseInitializer {
             // Create all tables
             await this.createTables();
             
+            // Create indexes for better performance
+            await this.createIndexes();
+            
             // Insert sample data if needed
             await this.insertSampleData();
             
@@ -161,6 +164,22 @@ class DatabaseInitializer {
                 )
             `,
 
+            crypto_trades: `
+                CREATE TABLE IF NOT EXISTS crypto_trades (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    crypto TEXT NOT NULL,
+                    buyDate TEXT NOT NULL,
+                    sellDate TEXT NOT NULL,
+                    buyPrice REAL NOT NULL CHECK(buyPrice > 0),
+                    sellPrice REAL NOT NULL CHECK(sellPrice > 0),
+                    quantity REAL NOT NULL CHECK(quantity > 0),
+                    profit REAL NOT NULL,
+                    percent REAL NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+
             // New tables for enhanced functionality
             goals: `
                 CREATE TABLE IF NOT EXISTS goals (
@@ -220,7 +239,10 @@ class DatabaseInitializer {
             'CREATE INDEX IF NOT EXISTS idx_activities_date ON activities(date)',
             'CREATE INDEX IF NOT EXISTS idx_activities_category ON activities(category)',
             'CREATE INDEX IF NOT EXISTS idx_habit_entries_date ON habit_entries(date)',
-            'CREATE INDEX IF NOT EXISTS idx_habit_entries_habit_id ON habit_entries(habit_id)'
+            'CREATE INDEX IF NOT EXISTS idx_habit_entries_habit_id ON habit_entries(habit_id)',
+            'CREATE INDEX IF NOT EXISTS idx_crypto_trades_crypto ON crypto_trades(crypto)',
+            'CREATE INDEX IF NOT EXISTS idx_crypto_trades_buyDate ON crypto_trades(buyDate)',
+            'CREATE INDEX IF NOT EXISTS idx_crypto_trades_sellDate ON crypto_trades(sellDate)'
         ];
 
         for (const indexSQL of indexes) {
@@ -246,6 +268,7 @@ class DatabaseInitializer {
             await this.insertSampleContacts();
             await this.insertSampleGoals();
             await this.insertSampleHabits();
+            await this.insertSampleCryptoTrades();
         } catch (error) {
             console.error('Error inserting sample data:', error);
         }
@@ -399,6 +422,29 @@ class DatabaseInitializer {
         }
         
         console.log('✓ Sample habits inserted');
+    }
+
+    async insertSampleCryptoTrades() {
+        const count = await this.getRowCount('crypto_trades');
+        if (count > 0) return;
+
+        const sampleTrades = [
+            ['Bitcoin', '2025-01-15', '2025-02-20', 42000.00, 48500.00, 0.5, 3250.00, 15.48],
+            ['Ethereum', '2025-02-01', '2025-03-15', 2800.00, 3200.00, 2.0, 800.00, 14.29],
+            ['Solana', '2025-01-20', '2025-02-10', 95.00, 110.00, 10.0, 150.00, 15.79],
+            ['Cardano', '2025-02-15', '2025-03-25', 0.45, 0.52, 1000.0, 70.00, 15.56],
+            ['Polygon', '2025-01-05', '2025-01-28', 0.85, 0.78, 500.0, -35.00, -8.24],
+            ['Chainlink', '2025-03-01', '2025-03-20', 15.50, 18.20, 50.0, 135.00, 17.42]
+        ];
+
+        for (const trade of sampleTrades) {
+            await this.runQuery(
+                'INSERT INTO crypto_trades (crypto, buyDate, sellDate, buyPrice, sellPrice, quantity, profit, percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                trade
+            );
+        }
+        
+        console.log('✓ Sample crypto trades inserted');
     }
 
     /**

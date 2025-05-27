@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "init-db": "node init-db.js",
+    "init-db": "node database/seeders/init-db.js",
     "backup-db": "node -e \"const DbInit = require('./init-db'); const path = require('path'); const db = new DbInit(path.join(require('electron').app.getPath('userData'), 'dashboard.db')); db.initialize().then(() => db.backupDatabase('./backup.db')).then(() => console.log('Backup complete')).catch(console.error);\"",
     "reset-db": "node -e \"const fs = require('fs'); const path = require('path'); const dbPath = path.join(require('electron').app.getPath('userData'), 'dashboard.db'); if(fs.existsSync(dbPath)) fs.unlinkSync(dbPath); console.log('Database reset. Run npm run init-db to recreate.');\"",
     "build": "electron-builder",
@@ -27,6 +27,7 @@
     "electron-builder": "^24.6.4"
   },
   "dependencies": {
+    "ejs": "^3.1.10",
     "sqlite3": "^5.1.6"
   },
   "build": {

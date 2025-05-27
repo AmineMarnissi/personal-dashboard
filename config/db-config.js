@@ -142,7 +142,8 @@ const REQUIRED_TABLES = [
     'projects',
     'training',
     'contacts',
-    'activities'
+    'activities',
+    'crypto_trades'
 ];
 
 const OPTIONAL_TABLES = [

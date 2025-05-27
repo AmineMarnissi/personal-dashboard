@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     dbInsert: (table, data) => ipcRenderer.invoke('db-insert', table, data),
     dbUpdate: (table, id, data) => ipcRenderer.invoke('db-update', table, id, data),
     dbDelete: (table, id) => ipcRenderer.invoke('db-delete', table, id),
+    // Add the new fixDatabase method
+    fixDatabase: () => ipcRenderer.invoke('fix-database'),
     
     // Dashboard specific queries
     dbGetRecentActivities: (limit) => ipcRenderer.invoke('db-get-recent-activities', limit),

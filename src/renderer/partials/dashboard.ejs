@@ -1,0 +1,87 @@
+<div id="dashboard" class="tab-content active">
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3 class="card-title">Bitcoin Overview</h3>
+            <div class="chart-container">
+                <canvas id="btc-chart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="dashboard-card">
+            <h3 class="card-title">Euro/USD Status</h3>
+            <canvas id="eurusd-chart" width="400" height="200"></canvas>
+        </div>
+        <div class="dashboard-card">
+            <h3 class="card-title">Or Status</h3>
+            <canvas id="dzd-chart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Calendar and To-Do Widgets -->
+    <div class="widgets-container">
+        <!-- Calendar Widget -->
+        <div class="calendar-widget">
+            <div class="calendar-header">
+                <h2 class="calendar-title">Calendar</h2>
+                <a href="#" class="show-all-link">Show All</a>
+            </div>
+
+            <div class="calendar-nav">
+                <button id="prev-month">‹</button>
+                <div class="calendar-month" id="calendar-month">May 2025</div>
+                <button id="next-month">›</button>
+            </div>
+
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- Calendar will be populated here -->
+            </div>
+
+            <input type="date" class="date-input" id="date-picker" />
+        </div>
+
+        <!-- To-Do Widget -->
+        <div class="todo-widget">
+            <div class="todo-header">
+                <h2 class="todo-title">To Do List</h2>
+                <a href="#" class="show-all-link">Show All</a>
+            </div>
+
+            <div class="todo-input-container">
+                <input type="text" placeholder="Enter task" id="todo-input" class="todo-input">
+                <button id="todo-add-btn" class="todo-add-btn">Add</button>
+            </div>
+
+            <ul id="todo-list" class="todo-list">
+                <!-- To-do items will be populated here -->
+            </ul>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3 class="card-title">Expenses Overview</h3>
+                <canvas id="expenses-chart"></canvas>
+        </div>
+        <div class="dashboard-card">
+            <h3 class="card-title">Projects Status</h3>
+            <canvas id="projects-chart"></canvas>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <h3 class="card-title">Recent Activity</h3>
+        <div class="activity-log">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody id="activity-log">
+                    <!-- Activity log entries will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const ejs = require('ejs');
 const DatabaseInitializer = require('../../database/seeders/init-db');
 
 let mainWindow;
@@ -22,7 +24,63 @@ async function initializeDatabase() {
     }
 }
 
+async function migrateDatabase(db) {
+    return new Promise((resolve, reject) => {
+      // Check if created_at column exists
+      db.get("PRAGMA table_info(crypto_trades)", (err, result) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        
+        // Get all columns
+        db.all("PRAGMA table_info(crypto_trades)", (err, columns) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          
+          const hasCreatedAt = columns.some(col => col.name === 'created_at');
+          
+          if (!hasCreatedAt) {
+            // Add the missing column
+            db.run("ALTER TABLE crypto_trades ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP", (err) => {
+              if (err) {
+                console.error('Error adding created_at column:', err);
+                reject(err);
+              } else {
+                console.log('Successfully added created_at column');
+                resolve();
+              }
+            });
+          } else {
+            resolve();
+          }
+        });
+      });
+    });
+  }
+
+const cssPath = path.join(__dirname, '../renderer/css/style.css').replace(/\\/g, '/');
+const rendererPath = path.join(__dirname, '../renderer/renderer.js').replace(/\\/g, '/');
+function renderEJS(filePath, data = {}) {
+    const template = fs.readFileSync(filePath, 'utf-8');
+    return ejs.render(template, data, {
+        views: [path.dirname(filePath)]
+    });
+
+}
 function createWindow() {
+    const html = renderEJS(path.join(__dirname, '../renderer/index.ejs'), {
+        user: {
+            name: 'John Doe',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+        },
+        cssPath: `${cssPath}`,
+        rendererPath: `file://${rendererPath}`
+    });
+    const tempPath = path.join(app.getPath('userData'), 'index.temp.html');
+    fs.writeFileSync(tempPath, html);
     mainWindow = new BrowserWindow({
         width: 1400,
         height: 900,
@@ -35,7 +93,7 @@ function createWindow() {
         show: false
     });
 
-    mainWindow.loadFile('src/renderer/index.html');
+    mainWindow.loadFile(tempPath);
 
     // Show window when ready
     mainWindow.once('ready-to-show', () => {
@@ -326,6 +384,42 @@ ipcMain.handle('db-backup', async (event) => {
         return { success: false, error: error.message };
     }
 });
+
+// In your main.js or main process file
+ipcMain.handle('fix-database', async () => {
+    try {
+        // إضافة الأعمدة بدون DEFAULT
+        await new Promise((resolve, reject) => {
+            db.run(`ALTER TABLE crypto_trades ADD COLUMN created_at DATETIME`, [], err => {
+                if (err && !err.message.includes('duplicate') && !err.message.includes('already exists')) return reject(err);
+                resolve();
+            });
+        });
+
+        await new Promise((resolve, reject) => {
+            db.run(`ALTER TABLE crypto_trades ADD COLUMN updated_at DATETIME`, [], err => {
+                if (err && !err.message.includes('duplicate') && !err.message.includes('already exists')) return reject(err);
+                resolve();
+            });
+        });
+
+        // تحديث السجلات الحالية بـ timestamps حالية
+        await new Promise((resolve, reject) => {
+            const now = new Date().toISOString();
+            db.run(`UPDATE crypto_trades SET created_at = ?, updated_at = ? WHERE created_at IS NULL`, [now, now], err => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Fix database failed:", error);
+        throw error;
+    }
+});
+
+
 
 // Error handling
 process.on('uncaughtException', (error) => {

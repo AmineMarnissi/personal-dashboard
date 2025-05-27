@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Manager</title>
+    <link rel="stylesheet" href="<%= cssPath %>">
+    <link rel="icon" href="assets/icon.png" />    
+</head>
+<body>
+    <div class="container">
+        <!-- Navbar / Topbar -->
+    <%- include('partials/navbar') %>
+    <!-- Header -->
+    <div class="header">
+        <h1>Personal Manager</h1>
+        <div class="current-date" id="current-date">Loading...</div>
+    </div>
+    <!-- Navigation Tabs -->
+    <%- include('partials/tabs') %>
+    
+    <!-- Dashboard -->
+    <%- include('partials/dashboard') %>
+
+    <!-- Crypto Tracker -->
+    <%- include('partials/crypto') %>
+
+    <!-- Expenses -->
+    <%- include('partials/expenses') %>
+
+    <!-- Ideas -->
+    <%- include('partials/ideas') %>
+
+    <!-- Projects -->
+    <%- include('partials/projects') %>
+
+    <!-- Training -->
+    <%- include('partials/training') %>
+
+    <!-- Contacts -->
+    <%- include('partials/contacts') %>
+
+    <!-- Profile -->
+    <%- include('partials/profile') %>
+
+    <!-- Settings -->
+    <%- include('partials/settings') %>
+    </div>
+    <!-- Modals -->
+    <%- include('partials/modals') %>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script type="module" src="<%= rendererPath %>"></script>
+</body>
+</html>
+
+
