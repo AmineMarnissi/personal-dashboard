@@ -1,44 +1,36 @@
-export let profileData = {};
 
-export async function initializeProfile() {
-  try {
-    const result = await window.electronAPI.auth.getCurrentUser();
-    const user = result.user;
 
-    // ✅ Remplir profileData
-    profileData = {
-      name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
-      email: user.email || '',
-      phone: user.phone || '',
-      job_title: user.job_title || '',
-      department: user.department || '',
-      location: user.location || '',
-      bio: user.bio || '',
-      avatar_url: user.avatar_url || 'https://randomuser.me/api/portraits/men/1.jpg',
-      joined: user.created_at || ''
-    };
+export let profileData = {
+    name: 'John Doe',
+    email: user.email,
+    phone: '+1 (555) 123-4567',
+    job: 'Product Manager',
+    department: 'Technology',
+    location: 'New York, NY',
+    bio: 'Passionate about technology and innovation. I enjoy creating solutions that make people\'s lives easier and more productive.',
+    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+    joined: 'January 15, 2024'
+};
 
-    // ✅ Update DOM
-
+// Initialize profile and settings data on page load
+export function initializeProfile() {
     document.getElementById('profile-name').textContent = profileData.name;
     document.getElementById('profile-email').textContent = profileData.email;
     document.getElementById('profile-phone').textContent = profileData.phone;
-    document.getElementById('profile-job').textContent = profileData.job_title || '';
+    document.getElementById('profile-job').textContent = profileData.job;
     document.getElementById('profile-department').textContent = profileData.department;
     document.getElementById('profile-location').textContent = profileData.location;
     document.getElementById('profile-bio').textContent = profileData.bio;
     document.getElementById('profile-joined').textContent = profileData.joined;
-    document.getElementById('profile-avatar').src = profileData.avatar_url || 'https://randomuser.me/api/portraits/men/1.jpg';
-
-    document.getElementById('profile-avatar').src = profileData.avatar_url || 'https://randomuser.me/api/portraits/men/1.jpg';
+    document.getElementById('profile-avatar').src = profileData.avatar;
+    
+    // Update topbar avatar and name
+    document.querySelector('.topbar .avatar').src = profileData.avatar;
     document.querySelector('.topbar .profile span:nth-of-type(1)').textContent = profileData.name;
-
+    
+    // Update statistics (placeholder values - you can connect these to actual data)
     updateProfileStats();
-  } catch (err) {
-    console.error('Erreur lors du chargement du profil:', err);
-  }
 }
-
 
 function updateProfileStats() {
     // These would typically be calculated from your actual data

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentification</title>
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>Bienvenue</h1>
+            <p>Connectez-vous à votre compte ou créez-en un nouveau</p>
+        </div>
+
+        <div class="auth-tabs">
+            <div class="auth-tab active" data-tab="login">Connexion</div>
+            <div class="auth-tab" data-tab="register">Inscription</div>
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+        <div class="success-message" id="success-message"></div>
+
+        <!-- Formulaire de connexion -->
+        <form class="auth-form active" id="login-form">
+            <div class="form-group">
+                <label for="login-username">Nom d'utilisateur ou email</label>
+                <div class="input-container">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="login-username" class="form-input with-icon" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="login-password">Mot de passe</label>
+                <div class="input-container password-input-container">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="login-password" class="form-input with-icon" required>
+                    <span class="password-toggle" data-target="login-password">👁️</span>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-button" id="login-button">
+                Se connecter
+            </button>
+
+            <div class="forgot-password">
+                <a href="#" id="forgot-password-link">Mot de passe oublié ?</a>
+            </div>
+        </form>
+
+        <!-- Formulaire d'inscription -->
+        <form class="auth-form" id="register-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="register-firstname">Prénom</label>
+                    <input type="text" id="register-firstname" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-lastname">Nom</label>
+                    <input type="text" id="register-lastname" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="register-username">Nom d'utilisateur</label>
+                <div class="input-container">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="register-username" class="form-input with-icon" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="register-email">Email</label>
+                <div class="input-container">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="register-email" class="form-input with-icon" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="register-password">Mot de passe</label>
+                <div class="input-container password-input-container">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="register-password" class="form-input with-icon" required>
+                    <span class="password-toggle" data-target="register-password">👁️</span>
+                </div>
+                <div class="password-strength" id="password-strength">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strength-fill"></div>
+                    </div>
+                    <span id="strength-text">Saisissez un mot de passe</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="register-confirm-password">Confirmer le mot de passe</label>
+                <div class="input-container password-input-container">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="register-confirm-password" class="form-input with-icon" required>
+                    <span class="password-toggle" data-target="register-confirm-password">👁️</span>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-button" id="register-button">
+                Créer un compte
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>© 2024 Votre Application. Tous droits réservés.</p>
+        </div>
+    </div>
+    <script src="auth-manager.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

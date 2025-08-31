@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Manager</title>
+    <title>Abir Application</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="<%= cssPath %>">
     <link rel="icon" href="assets/icon.png" />    
 </head>
@@ -13,15 +14,15 @@
     <%- include('partials/navbar') %>
     <!-- Header -->
     <div class="header">
-        <h1>Personal Manager</h1>
+        <h1>Abir Management</h1>
         <div class="current-date" id="current-date">Loading...</div>
     </div>
-    <!-- Navigation Tabs -->
-    <%- include('partials/tabs') %>
+
     
     <!-- Dashboard -->
     <%- include('partials/dashboard') %>
-
+    <!-- News -->
+    <%- include('partials/news') %>
     <!-- Crypto Tracker -->
     <%- include('partials/crypto') %>
 
@@ -39,6 +40,9 @@
 
     <!-- Contacts -->
     <%- include('partials/contacts') %>
+
+    <!-- Chatgpt -->
+    <%- include('partials/chatgpt') %>
 
     <!-- Profile -->
     <%- include('partials/profile') %>

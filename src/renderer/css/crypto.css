@@ -1,0 +1,80 @@
+#crypto-tracker {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 20px 30px;
+    backdrop-filter: blur(10px);
+    color: white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  #crypto-tracker h2,
+  #crypto-tracker h3 {
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+  
+  #crypto-tracker label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  
+  #crypto-tracker input,
+  #crypto-tracker select {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    outline: none;
+  }
+  
+  #crypto-tracker button {
+    background-color: #00c896;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+  
+  #crypto-tracker button:hover {
+    background-color: #00b384;
+  }
+  
+  #crypto-tracker .position-size,
+  #crypto-tracker .filters,
+  #crypto-tracker .actions,
+  #crypto-tracker .summary,
+  #crypto-tracker .risk-management {
+    margin-bottom: 30px;
+  }
+  
+  #tradesTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  #tradesTable th,
+  #tradesTable td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  #tradesTable th {
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+  }
+  
+  #tradesTable tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }

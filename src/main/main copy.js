@@ -4,17 +4,12 @@ const fs = require('fs');
 const ejs = require('ejs');
 const DatabaseInitializer = require('../../database/seeders/init-db');
 const AuthService = require('./auth-service');
-require('dotenv').config();
-const { Configuration, OpenAIApi } = require("openai");
-
-
 
 
 let mainWindow;
 let db;
 let authService;
-let isAuthenticated = false;
-let currentUser = null;
+
 
 async function initializeDatabase() {
     try {
@@ -35,54 +30,64 @@ async function initializeDatabase() {
     }
 }
 
+
 async function migrateDatabase(db) {
     return new Promise((resolve, reject) => {
-        // Check if created_at column exists
-        db.get("PRAGMA table_info(crypto_trades)", (err, result) => {
-            if (err) {
+      // Check if created_at column exists
+      db.get("PRAGMA table_info(crypto_trades)", (err, result) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        
+        // Get all columns
+        db.all("PRAGMA table_info(crypto_trades)", (err, columns) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          
+          const hasCreatedAt = columns.some(col => col.name === 'created_at');
+          
+          if (!hasCreatedAt) {
+            // Add the missing column
+            db.run("ALTER TABLE crypto_trades ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP", (err) => {
+              if (err) {
+                console.error('Error adding created_at column:', err);
                 reject(err);
-                return;
-            }
-            
-            // Get all columns
-            db.all("PRAGMA table_info(crypto_trades)", (err, columns) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-                
-                const hasCreatedAt = columns.some(col => col.name === 'created_at');
-                
-                if (!hasCreatedAt) {
-                    // Add the missing column
-                    db.run("ALTER TABLE crypto_trades ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP", (err) => {
-                        if (err) {
-                            console.error('Error adding created_at column:', err);
-                            reject(err);
-                        } else {
-                            console.log('Successfully added created_at column');
-                            resolve();
-                        }
-                    });
-                } else {
-                    resolve();
-                }
+              } else {
+                console.log('Successfully added created_at column');
+                resolve();
+              }
             });
+          } else {
+            resolve();
+          }
         });
+      });
     });
-}
+  }
 
 const cssPath = path.join(__dirname, '../renderer/css/style.css').replace(/\\/g, '/');
 const rendererPath = path.join(__dirname, '../renderer/renderer.js').replace(/\\/g, '/');
-
 function renderEJS(filePath, data = {}) {
     const template = fs.readFileSync(filePath, 'utf-8');
     return ejs.render(template, data, {
         views: [path.dirname(filePath)]
     });
-}
 
+}
 function createWindow() {
+    const html = renderEJS(path.join(__dirname, '../renderer/index.ejs'), {
+        user: {
+            name: 'John Doe',
+            avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
+        },
+        cssPath: `${cssPath}`,
+        rendererPath: `file://${rendererPath}`
+    });
+    const tempPath = path.join(app.getPath('userData'), 'index.temp.html');
+    fs.writeFileSync(tempPath, html);
     mainWindow = new BrowserWindow({
         width: 1400,
         height: 900,
@@ -91,13 +96,11 @@ function createWindow() {
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js')
         },
-        icon: path.join(__dirname, 'assets/icon.png'),
-        show: false,
-        titleBarStyle: 'default'
+        icon: path.join(__dirname, 'assets/icon.png'), // Add your app icon
+        show: false
     });
 
-    // Toujours commencer par l'interface d'authentification
-    loadAuthInterface();
+    mainWindow.loadFile(tempPath);
 
     // Show window when ready
     mainWindow.once('ready-to-show', () => {
@@ -113,52 +116,6 @@ function createWindow() {
         mainWindow = null;
     });
 }
-
-// Charger l'interface d'authentification
-function loadAuthInterface() {
-    const authPath = path.join(__dirname, '../renderer/auth-ui.html');
-    mainWindow.loadFile(authPath);
-    isAuthenticated = false;
-    currentUser = null;
-}
-
-// Charger le dashboard principal
-function loadDashboard(user) {
-    try {
-        const finalUser = user || currentUser || {
-            first_name: 'Utilisateur',
-            last_name: '',
-            username: 'invité',
-            avatar: null
-        };
-
-        const fullName = finalUser.first_name && finalUser.last_name
-            ? `${finalUser.first_name} ${finalUser.last_name}`
-            : finalUser.username;
-
-        const avatar = finalUser.avatar && finalUser.avatar.trim() !== ''
-            ? finalUser.avatar
-            : 'https://randomuser.me/api/portraits/men/1.jpg';
-
-        const html = renderEJS(path.join(__dirname, '../renderer/index.ejs'), {
-            user: {
-                name: fullName,
-                avatar: avatar
-            },
-            cssPath: `${cssPath}`,
-            rendererPath: `file://${rendererPath}`
-        });
-
-        const tempPath = path.join(app.getPath('userData'), 'index.temp.html');
-        fs.writeFileSync(tempPath, html);
-        mainWindow.loadFile(tempPath);
-    } catch (error) {
-        console.error('Error loading dashboard:', error);
-        dialog.showErrorBox('Dashboard Error', 'Failed to load dashboard: ' + error.message);
-    }
-}
-
-
 
 // App event listeners
 app.whenReady().then(async () => {
@@ -184,136 +141,6 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
-
-// ==================== HANDLERS D'AUTHENTIFICATION ====================
-
-// Inscription
-ipcMain.handle('auth-register', async (event, userData) => {
-    try {
-        const result = await authService.registerUser(userData);
-        return result;
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-});
-
-// Connexion
-ipcMain.handle('auth-login', async (event, username, password) => {
-    try {
-        const result = await authService.authenticateUser(username, password);
-        
-        if (result.success) {
-            isAuthenticated = true;
-            currentUser = result.user;
-            
-            // Charger le dashboard après authentification réussie
-            setTimeout(() => {
-                loadDashboard(result.user);
-            }, 1000); // Petit délai pour montrer le message de succès
-        }
-        
-        return result;
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-});
-
-// Validation de session au démarrage
-ipcMain.handle('auth-validate-session', async (event, sessionToken) => {
-    try {
-        const user = await authService.validateSession(sessionToken);
-        
-        if (user) {
-            isAuthenticated = true;
-            currentUser = user;
-            
-            // Auto-charger le dashboard si la session est valide
-            setTimeout(() => {
-                loadDashboard(user);
-            }, 500);
-            
-            return { success: true, user };
-        }
-        
-        return { success: false };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-});
-
-// Déconnexion
-ipcMain.handle('auth-logout', async (event, sessionToken) => {
-    try {
-        const result = await authService.logout(sessionToken);
-        
-        if (result.success) {
-            isAuthenticated = false;
-            currentUser = null;
-            
-            // Retourner à l'interface d'authentification
-            loadAuthInterface();
-        }
-        
-        return result;
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-});
-
-// Changer mot de passe
-ipcMain.handle('auth-change-password', async (event, userId, currentPassword, newPassword) => {
-    try {
-        const result = await authService.changePassword(userId, currentPassword, newPassword);
-        return result;
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-});
-
-// Mise à jour du profil
-ipcMain.handle('auth-update-profile', async (event, userId, profileData) => {
-    try {
-        const result = await authService.updateUserProfile(userId, profileData);
-        
-        if (result.success && currentUser) {
-            // Mettre à jour les données utilisateur locales
-            Object.assign(currentUser, profileData);
-        }
-        
-        return result;
-    } catch (error) {
-        console.error('Erreur mise à jour du profil:', error);
-        return { success: false, error: error.message };
-    }
-});
-
-// Handler pour obtenir l'utilisateur actuel
-ipcMain.handle('auth-get-current-user', async (event) => {
-    return {
-        success: isAuthenticated,
-        user: currentUser,
-        isAuthenticated
-    };
-});
-
-// Handler pour forcer le retour à l'authentification (utile pour debug)
-ipcMain.handle('app-show-auth', async (event) => {
-    loadAuthInterface();
-    return { success: true };
-});
-
-ipcMain.handle('app-show-dashboard', async (event) => {
-    // ✅ TEMP : forcer le dashboard sans auth
-    loadDashboard({
-        first_name: 'Test',
-        last_name: 'User',
-        avatar: null
-    });
-    return { success: true };
-});
-
-
-// ==================== HANDLERS DE BASE DE DONNÉES ====================
 
 // Database operations via IPC
 ipcMain.handle('db-get-all', async (event, table) => {
@@ -565,7 +392,7 @@ ipcMain.handle('db-backup', async (event) => {
     }
 });
 
-// Fix database handler
+// In your main.js or main process file
 ipcMain.handle('fix-database', async () => {
     try {
         // إضافة الأعمدة بدون DEFAULT
@@ -599,40 +426,66 @@ ipcMain.handle('fix-database', async () => {
     }
 });
 
-
-// Intégration de ChatGPT avec l'API Gemini
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-// Clé API depuis .env ou directement
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIza...");
-
-ipcMain.handle("chat-ask-gpt", async (event, message) => {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-04-17" });
-
-    const result = await model.generateContent(message);
-    const response = await result.response;
-    const text = response.text();
-
-    return text.trim();
-  } catch (error) {
-    console.error("❌ Erreur de l'API Gemini :", error);
-    return "Une erreur est survenue lors de la communication avec Gemini.";
-  }
+// Inscription
+ipcMain.handle('auth-register', async (event, userData) => {
+    try {
+        const result = await authService.registerUser(userData);
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
 });
 
-const Parser = require('rss-parser');
-const parser = new Parser();
-
-ipcMain.handle('get-news-feed', async () => {
-  try {
-    const feed = await parser.parseURL('https://news.google.com/rss/search?q=AI+OR+robotics&hl=en&gl=US&ceid=US:en');
-    return feed.items.slice(0, 10); // نرجع أول 10 أخبار
-  } catch (err) {
-    console.error("❌ Failed to fetch news:", err);
-    return [];
-  }
+// Connexion
+ipcMain.handle('auth-login', async (event, username, password) => {
+    try {
+        const result = await authService.authenticateUser(username, password);
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
 });
+
+// Validation de session
+ipcMain.handle('auth-validate-session', async (event, sessionToken) => {
+    try {
+        const user = await authService.validateSession(sessionToken);
+        return { success: !!user, user };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// Déconnexion
+ipcMain.handle('auth-logout', async (event, sessionToken) => {
+    try {
+        const result = await authService.logout(sessionToken);
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// Changer mot de passe
+ipcMain.handle('auth-change-password', async (event, userId, currentPassword, newPassword) => {
+    try {
+        const result = await authService.changePassword(userId, currentPassword, newPassword);
+        return result;
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+ipcMain.handle('auth-update-profile', async (event, userId, profileData) => {
+    try {
+        const result = await authService.updateUserProfile(userId, profileData);
+        return result;
+    } catch (error) {
+        console.error('Erreur mise à jour du profil:', error);
+        return { success: false, error: error.message };
+    }
+});
+
 
 
 // Error handling

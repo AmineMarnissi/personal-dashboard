@@ -6,11 +6,12 @@ import { renderTraining, openTrainingModal, closeTrainingModal, addTraining, edi
 import { renderContacts, openContactModal, closeContactModal, addContact, editContact, updateContact, deleteContact } from './js/contacts.js';
 import { updateCurrentDate,setupCalendar } from './js/calender.js';
 import { setupTodoList } from './js/todo.js';
-import { initializeProfile, profileData } from './js/profile.js';
+import { initializeProfile,profileData } from './js/profile.js';
 import { initializeSettings,setupSettingsHandlers } from './js/settings.js';
 import { initCryptoTracker } from './js/crypto.js';
 
 
+let newAvatarDataURL = null;
 
 // Navigation
 document.querySelectorAll('.nav-link').forEach(link => {
@@ -28,7 +29,13 @@ document.querySelectorAll('.nav-link').forEach(link => {
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
-        document.getElementById(tabId).classList.add('active');
+        //document.getElementById(tabId).classList.add('active');
+        const tabElement = document.getElementById(tabId);
+        if (tabElement) {
+        tabElement.classList.add('active');
+        } else {
+        console.warn(`⚠️ Élément avec ID "${tabId}" introuvable dans le DOM.`);
+}
         
         // Load data for the selected tab
         switch(tabId) {
@@ -436,6 +443,8 @@ document.addEventListener('DOMContentLoaded', function () {
         
         profileModal.style.display = 'block';
     });
+    
+    
 
     closeProfileModal.addEventListener('click', function() {
         profileModal.style.display = 'none';
@@ -445,48 +454,71 @@ document.addEventListener('DOMContentLoaded', function () {
         profileModal.style.display = 'none';
     });
 
-    profileForm.addEventListener('submit', function(e) {
+    profileForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-        // Update profile data
-        profileData.name = document.getElementById('edit-profile-name').value;
-        profileData.email = document.getElementById('edit-profile-email').value;
-        profileData.phone = document.getElementById('edit-profile-phone').value;
-        profileData.job = document.getElementById('edit-profile-job').value;
-        profileData.department = document.getElementById('edit-profile-department').value;
-        profileData.location = document.getElementById('edit-profile-location').value;
-        profileData.bio = document.getElementById('edit-profile-bio').value;
-        
-        // Update profile display
-        initializeProfile();
-        
-        // Close modal
-        profileModal.style.display = 'none';
-        
-        // Show success message (you can customize this)
-        alert('Profile updated successfully!');
+    
+        const updatedData = {
+            email: document.getElementById('edit-profile-email').value,
+            phone: document.getElementById('edit-profile-phone').value,
+            job_title: document.getElementById('edit-profile-job').value,
+            department: document.getElementById('edit-profile-department').value,
+            location: document.getElementById('edit-profile-location').value,
+            bio: document.getElementById('edit-profile-bio').value,
+        };
+    
+        try {
+            const res = await window.electronAPI.auth.getCurrentUser();
+            const user = res.user; // ✅ هذا هو المهم
+    
+            console.log('🔍 Updated data:', updatedData);
+            console.log('👤 Current user:', user);
+    
+            if (!user || !user.id) {
+                alert("Utilisateur introuvable !");
+                return;
+            }
+    
+            const result = await window.electronAPI.auth.updateProfile(user.id, updatedData);
+    
+            if (result.success) {
+                await initializeProfile();
+                profileModal.style.display = 'none';
+                alert('✅ Profil mis à jour avec succès !');
+            } else {
+                alert('❌ Erreur : ' + result.error);
+            }
+    
+        } catch (error) {
+            console.error('Erreur de mise à jour du profil :', error);
+            alert('❌ Erreur lors de la mise à jour du profil.');
+        }
     });
+    
+    
 
     // Avatar change functionality
     const changeAvatarBtn = document.getElementById('change-avatar-btn');
     const avatarInput = document.getElementById('avatar-input');
-
-    changeAvatarBtn.addEventListener('click', function() {
+    
+    changeAvatarBtn.addEventListener('click', function () {
         avatarInput.click();
     });
-
-    avatarInput.addEventListener('change', function(e) {
+    
+    avatarInput.addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                profileData.avatar = e.target.result;
-                document.getElementById('profile-avatar').src = profileData.avatar;
-                document.querySelector('.topbar .avatar').src = profileData.avatar;
+            reader.onload = function (e) {
+                newAvatarDataURL = e.target.result; // نخزن الصورة في المتغير المؤقت
+    
+                // عرض الصورة في الفورم والمعاينة
+                document.getElementById('profile-avatar').src = newAvatarDataURL;
+                document.querySelector('.topbar .avatar').src = newAvatarDataURL;
             };
             reader.readAsDataURL(file);
         }
     });
+    
 
     // Close modals when clicking outside
     window.addEventListener('click', function(e) {
@@ -500,6 +532,79 @@ document.addEventListener('DOMContentLoaded', function () {
 });
  
 
+document.getElementById('chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+  
+    appendChat('user', message);
+    input.value = '';
+  
+    // إرسال إلى backend (مثلاً OpenAI API أو نموذج محلي)
+    try {
+      const response = await window.electronAPI.chat.askGPT(message);
+      appendChat('bot', response);
+    } catch (err) {
+      appendChat('bot', '❌ Error: ' + err.message);
+    }
+  });
+  
+  function appendChat(role, text) {
+    const history = document.getElementById('chat-history');
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role}`;
+    bubble.textContent = text;
+    history.appendChild(bubble);
+    history.scrollTop = history.scrollHeight;
+  }
+  document.addEventListener('DOMContentLoaded', loadNewsFeed);
+  async function loadNewsFeed() {
+    const container = document.getElementById('news-feed');
+    container.innerHTML = '<p>🔄 Loading news...</p>';
+  
+    try {
+      const articles = await window.electronAPI.news.getFeed();
+      if (!articles.length) {
+        container.innerHTML = '<p>⚠️ No news available.</p>';
+        return;
+      }
+  
+      container.innerHTML = articles.map(article => `
+        <div class="news-item">
+          <a href="${article.link}" target="_blank">${article.title}</a>
+          <div class="news-meta">
+            <span>${article.pubDate.split(' ').slice(0, 4).join(' ')}</span> |
+            <span>${article.creator || article.source?.title || 'Unknown Source'}</span>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      container.innerHTML = '<p>❌ Failed to load news.</p>';
+    }
+  }
+  document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const tabName = link.getAttribute('data-tab');
+    const tabId = `${tabName}-tab`;
+
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) {
+      targetTab.classList.add('active');
+      link.classList.add('active');
+
+      // ✅ فقط لو tab هي الأخبار
+      if (tabName === 'news') {
+        loadNewsFeed();
+      }
+    }
+  });
+});
+
+  
 // Initialize application
 function init() {
     setupEventListeners();

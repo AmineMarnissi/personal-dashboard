@@ -1,17 +1,17 @@
 <div class="topbar">
     <div class="topbar-item">
-        <img src="https://img.icons8.com/material-rounded/24/000000/new-post.png" alt="Message Icon" />
-        <span>Message</span>
-    </div>
-    <div class="topbar-item">
         <img src="https://img.icons8.com/ios-filled/24/000000/appointment-reminders--v1.png" alt="Notification Icon" />
         <span>Notification</span>
     </div>
+    <div class="topbar-item">
+        <!-- Navigation Tabs -->
+        <%- include('partials/tabs') %>
+    </div>
     <div class="topbar-item profile" id="profile-dropdown-toggle">
-        <img src="<%= user?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg' %>" alt="User Avatar" class="avatar" />
-        <span><%= user?.name || 'John Doe' %></span>
+        <img src="<%= user.avatar %>" alt="User Avatar" class="avatar" />
+        <span><%= user.name %></span>
         <span class="arrow">▾</span>
-
+    
         <div class="dropdown-menu" id="profile-dropdown">
             <a href="#" id="profile-link" data-tab="profile">My Profile</a>
             <a href="#" id="settings-link" data-tab="settings">Settings</a>
@@ -19,3 +19,5 @@
         </div>
     </div>
 </div>
+
+

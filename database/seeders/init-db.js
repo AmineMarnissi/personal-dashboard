@@ -83,6 +83,41 @@ class DatabaseInitializer {
      */
     getTableDefinitions() {
         return {
+
+            users: `
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    email TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    salt TEXT NOT NULL,
+                    first_name TEXT,
+                    last_name TEXT,
+                    phone TEXT,
+                    job_title TEXT,
+                    department TEXT,
+                    location TEXT,
+                    bio TEXT,
+                    avatar_url TEXT,
+                    is_active BOOLEAN DEFAULT 1,
+                    last_login DATETIME,
+                    failed_attempts INTEGER DEFAULT 0,
+                    locked_until DATETIME,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            `,
+            user_sessions: `
+                CREATE TABLE IF NOT EXISTS user_sessions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    session_token TEXT UNIQUE NOT NULL,
+                    expires_at DATETIME NOT NULL,
+                    is_active BOOLEAN DEFAULT 1,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+                )
+            `,
             expenses: `
                 CREATE TABLE IF NOT EXISTS expenses (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
